@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\EstadoComanda;
+use App\Models\EstadoMesa;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,8 +16,11 @@ use Tests\TestCase;
 |
 */
 
+// RefreshDatabase: cada prueba corre las migraciones sobre la base de datos en memoria
+// (ver phpunit.xml: DB_DATABASE=:memory:) y la limpia entre pruebas. Sin esto, las pruebas de
+// Feature no tendrían ni tablas ni datos aislados de una prueba a otra.
 pest()->extend(TestCase::class)
- // ->use(RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -47,4 +52,20 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+// Helpers compartidos por las pruebas de Comanda: los estados son catálogos (App\Models\EstadoMesa
+// / EstadoComanda), no tienen factory propia ni datos por defecto — firstOrCreate() reutiliza la
+// fila si ya existe en esta base de datos de prueba, o la crea si hace falta.
+function estadoMesa(string $codigo): EstadoMesa
+{
+    return EstadoMesa::firstOrCreate(['codigo' => $codigo], ['nombre' => ucfirst($codigo)]);
+}
+
+function estadoComanda(string $codigo): EstadoComanda
+{
+    return EstadoComanda::firstOrCreate(
+        ['codigo' => $codigo],
+        ['nombre' => ucfirst(str_replace('_', ' ', $codigo))]
+    );
 }

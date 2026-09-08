@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\ReglaNegocioException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,4 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Punto único de traducción: cualquier regla de negocio violada en cualquier servicio
+        // (ComandaService, CategoriaService, etc.) termina acá y se convierte en un 409 con el
+        // mensaje de la excepción — ningún controlador necesita un try/catch propio para esto.
+        $exceptions->render(function (ReglaNegocioException $e, Request $request) {
+            return response()->json(['message' => $e->getMessage()], 409);
+        });
     })->create();

@@ -13,9 +13,15 @@ class ComandaFactory extends Factory
     public function definition(): array
     {
         return [
-            'mesa_id' => Mesa::inRandomOrder()->value('id'),
-            'user_id' => User::inRandomOrder()->value('id'),
-            'estado_comanda_id' => EstadoComanda::inRandomOrder()->value('id'),
+            // "?? Modelo::factory()": reutiliza una fila que ya exista (rápido, típico al sembrar
+            // datos de ejemplo con muchas mesas/usuarios ya creados) o crea una nueva sobre la
+            // marcha si la prueba arranca de una base de datos vacía (ver RefreshDatabase en
+            // tests/Pest.php) — sin esto, una comanda de prueba sin mesa/usuario previos fallaría
+            // por violar la restricción NOT NULL de la columna.
+            'mesa_id' => Mesa::inRandomOrder()->value('id') ?? Mesa::factory(),
+            'user_id' => User::inRandomOrder()->value('id') ?? User::factory(),
+            'estado_comanda_id' => EstadoComanda::inRandomOrder()->value('id')
+                ?? EstadoComanda::firstOrCreate(['codigo' => 'abierta'], ['nombre' => 'Abierta'])->id,
             'total' => null,
         ];
     }
