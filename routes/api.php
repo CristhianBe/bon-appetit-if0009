@@ -9,6 +9,7 @@ use App\Http\Controllers\EstadoComandaController;
 use App\Http\Controllers\MesaController;
 use App\Http\Controllers\MetodoPagoController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\RoleController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -61,3 +62,10 @@ Route::post('/productos', [ProductoController::class, 'store']);
 Route::get('/productos/{producto}', [ProductoController::class, 'show']);
 Route::put('/productos/{producto}', [ProductoController::class, 'update']);
 Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
+
+//Role
+Route::get('/roles', [RoleController::class, 'index']);
+Route::post('/roles', [RoleController::class, 'store']);
+Route::get('/roles/{role}', [RoleController::class, 'show']);
+Route::put('/roles/{role}', [RoleController::class, 'update']);
+Route::delete('/roles/{role}', [RoleController::class, 'destroy']);
