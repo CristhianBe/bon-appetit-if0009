@@ -11,6 +11,7 @@ use App\Http\Controllers\MetodoPagoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UnidadMedidaController;
+use App\Http\Controllers\UserController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -77,3 +78,10 @@ Route::post('/unidad-medida', [UnidadMedidaController::class, 'store']);
 Route::get('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'show']);
 Route::put('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'update']);
 Route::delete('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'destroy']);
+
+//User
+Route::get('/users', [UserController::class, 'index']);
+Route::post('/users', [UserController::class, 'store']);
+Route::get('/users/{user}', [UserController::class, 'show']);
+Route::put('/users/{user}', [UserController::class, 'update']);
+Route::delete('/users/{user}', [UserController::class, 'destroy']);
