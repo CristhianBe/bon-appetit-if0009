@@ -7,6 +7,7 @@ use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\DetalleComandaController;
 use App\Http\Controllers\EstadoComandaController;
 use App\Http\Controllers\MesaController;
+use App\Http\Controllers\MetodoPagoController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -45,3 +46,12 @@ Route::post('/mesas', [MesaController::class, 'store']);
 Route::get('/mesas/{mesa}', [MesaController::class, 'show']);
 Route::put('/mesas/{mesa}', [MesaController::class, 'update']);
 Route::delete('/mesas/{mesa}', [MesaController::class, 'destroy']);
+
+//Metodos de pago
+Route::get('/metodos-pago', [MetodoPagoController::class, 'index']);
+Route::post('/metodos-pago', [MetodoPagoController::class, 'store']);
+Route::get('/metodos-pago/{metodoPago}', [MetodoPagoController::class, 'show']);
+Route::put('/metodos-pago/{metodoPago}', [MetodoPagoController::class, 'update']);
+Route::delete('/metodos-pago/{metodoPago}', [MetodoPagoController::class, 'destroy']);
+
+
