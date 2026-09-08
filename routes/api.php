@@ -10,6 +10,7 @@ use App\Http\Controllers\MesaController;
 use App\Http\Controllers\MetodoPagoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UnidadMedidaController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -69,3 +70,10 @@ Route::post('/roles', [RoleController::class, 'store']);
 Route::get('/roles/{role}', [RoleController::class, 'show']);
 Route::put('/roles/{role}', [RoleController::class, 'update']);
 Route::delete('/roles/{role}', [RoleController::class, 'destroy']);
+
+//Unidad de medida
+Route::get('/unidad-medida', [UnidadMedidaController::class, 'index']);
+Route::post('/unidad-medida', [UnidadMedidaController::class, 'store']);
+Route::get('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'show']);
+Route::put('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'update']);
+Route::delete('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'destroy']);
