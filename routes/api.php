@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ComandaController;
+use App\Http\Controllers\DetalleComandaController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -21,3 +22,10 @@ Route::post('/comandas', [ComandaController::class, 'store']);
 Route::get('/comandas/{comanda}', [ComandaController::class, 'show']);
 Route::put('/comandas/{comanda}', [ComandaController::class, 'update']);
 Route::delete('/comandas/{comanda}', [ComandaController::class, 'destroy']);
+
+//Detalle Comanda rutas
+Route::get('/DetalleComandas', [DetalleComandaController::class, 'index']);
+Route::post('/DetalleComandas', [DetalleComandaController::class, 'store']);
+Route::get('/DetalleComandas/{detalleComanda}', [DetalleComandaController::class, 'show']);
+Route::put('/DetalleComandas/{detalleComanda}', [DetalleComandaController::class, 'update']);
+Route::delete('/DetalleComandas/{detalleComanda}', [DetalleComandaController::class, 'destroy']);
