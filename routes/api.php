@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ComandaController;
 use App\Http\Controllers\DetalleComandaController;
 use App\Http\Controllers\EstadoComandaController;
+use App\Http\Controllers\MesaController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -37,3 +38,10 @@ Route::post('/EstadoComandas', [EstadoComandaController::class, 'store']);
 Route::get('/EstadoComandas/{estadoComanda}', [EstadoComandaController::class, 'show']);
 Route::put('/EstadoComandas/{estadoComanda}', [EstadoComandaController::class, 'update']);
 Route::delete('/EstadoComandas/{estadoComanda}', [EstadoComandaController::class, 'destroy']);
+
+//Mesa rutas
+Route::get('/mesas', [MesaController::class, 'index']);
+Route::post('/mesas', [MesaController::class, 'store']);
+Route::get('/mesas/{mesa}', [MesaController::class, 'show']);
+Route::put('/mesas/{mesa}', [MesaController::class, 'update']);
+Route::delete('/mesas/{mesa}', [MesaController::class, 'destroy']);
