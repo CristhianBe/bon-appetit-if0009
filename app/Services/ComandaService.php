@@ -9,12 +9,32 @@ use App\Models\EstadoComanda;
 use App\Models\EstadoMesa;
 use App\Models\Mesa;
 use App\Models\Producto;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class ComandaService
 {
     private const UMBRAL_DESCUENTO = 15000;
     private const PORCENTAJE_DESCUENTO = 0.10;
+    private const TAMANO_PAGINA_MAXIMO = 50;
+
+    public function listar(array $filtros): LengthAwarePaginator
+    {
+        $query = Comanda::with(['mesa.estado', 'mesero', 'estadoComanda', 'detalles.producto']);
+
+        if (! empty($filtros['mesa_id'])) {
+            $query->where('mesa_id', $filtros['mesa_id']);
+        }
+
+        if (! empty($filtros['estado_comanda_id'])) {
+            $query->where('estado_comanda_id', $filtros['estado_comanda_id']);
+        }
+
+        $porPagina = min((int) ($filtros['por_pagina'] ?? 15), self::TAMANO_PAGINA_MAXIMO);
+        $porPagina = max($porPagina, 1);
+
+        return $query->latest()->paginate($porPagina);
+    }
 
     public function abrir(array $datos): Comanda
     {
@@ -46,6 +66,14 @@ class ComandaService
 
     public function agregarDetalle(Comanda $comanda, array $datos): DetalleComanda
     {
+        if ($comanda->estadoComanda->codigo === 'cerrada') {
+            throw new ReglaNegocioException(
+                'No se puede modificar el detalle de una comanda ya cerrada.',
+                'comanda_cerrada_no_editable',
+                409,
+            );
+        }
+
         $producto = Producto::findOrFail($datos['producto_id']);
 
         if (! $producto->disponible) {
@@ -63,6 +91,21 @@ class ComandaService
             'precio_unitario' => $producto->precio,
             'notas' => $datos['notas'] ?? null,
         ]);
+    }
+
+    public function actualizarDetalle(DetalleComanda $detalle, array $datos): DetalleComanda
+    {
+        if ($detalle->comanda->estadoComanda->codigo === 'cerrada') {
+            throw new ReglaNegocioException(
+                'No se puede modificar el detalle de una comanda ya cerrada.',
+                'comanda_cerrada_no_editable',
+                409,
+            );
+        }
+
+        $detalle->update($datos);
+
+        return $detalle->refresh();
     }
 
     public function cerrar(Comanda $comanda): Comanda

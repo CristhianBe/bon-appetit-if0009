@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductoUpdateRequest extends FormRequest
 {
@@ -45,7 +46,7 @@ class ProductoUpdateRequest extends FormRequest
         ];
     }
 
-     public function messages(): array
+    public function messages(): array
     {
         return [
             'nombre.required' => 'El nombre del producto es obligatorio.',
@@ -66,7 +67,3 @@ class ProductoUpdateRequest extends FormRequest
         ];
     }
 }
-
-
-
-
