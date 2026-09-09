@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
+use App\Http\Resources\UserResource;
+use App\Models\User;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -11,38 +16,55 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return UserResource::collection(User::with('rol')->orderBy('name')->paginate(15));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UserStoreRequest $request)
     {
-        //
+        $datos = $request->validated();
+        $datos['password'] = Hash::make($datos['password']);
+
+        $user = User::create($datos);
+
+        return UserResource::make($user->load('rol'))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(User $user)
     {
-        //
+        return UserResource::make($user->load('rol'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UserUpdateRequest $request, User $user)
     {
-        //
+        $datos = $request->validated();
+
+        if (isset($datos['password'])) {
+            $datos['password'] = Hash::make($datos['password']);
+        }
+
+        $user->update($datos);
+
+        return UserResource::make($user->refresh()->load('rol'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+
+        return response()->noContent();
     }
 }
