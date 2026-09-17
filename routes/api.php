@@ -17,71 +17,31 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 //Categoria rutas 
-Route::get('/categories', [CategoriaController::class, 'index']);
-Route::post('/categories', [CategoriaController::class, 'store']);
-Route::get('/categories/{category}', [CategoriaController::class, 'show']);
-Route::put('/categories/{category}', [CategoriaController::class, 'update']);
-Route::delete('/categories/{category}', [CategoriaController::class, 'destroy']);
+Route::apiResource('categories', CategoriaController::class);
 
 //Comanda rutas
-Route::get('/comandas', [ComandaController::class, 'index']);
-Route::post('/comandas', [ComandaController::class, 'store']);
-Route::get('/comandas/{comanda}', [ComandaController::class, 'show']);
-Route::put('/comandas/{comanda}', [ComandaController::class, 'update']);
-Route::delete('/comandas/{comanda}', [ComandaController::class, 'destroy']);
+Route::apiResource('comandas', ComandaController::class);
 
 //Detalle Comanda rutas
-Route::get('/DetalleComandas', [DetalleComandaController::class, 'index']);
-Route::post('/DetalleComandas', [DetalleComandaController::class, 'store']);
-Route::get('/DetalleComandas/{detalleComanda}', [DetalleComandaController::class, 'show']);
-Route::put('/DetalleComandas/{detalleComanda}', [DetalleComandaController::class, 'update']);
-Route::delete('/DetalleComandas/{detalleComanda}', [DetalleComandaController::class, 'destroy']);
+Route::apiResource('comanda-detalle', DetalleComandaController::class);
 
 //Estado Comanda rutas
-Route::get('/EstadoComandas', [EstadoComandaController::class, 'index']);
-Route::post('/EstadoComandas', [EstadoComandaController::class, 'store']);
-Route::get('/EstadoComandas/{estadoComanda}', [EstadoComandaController::class, 'show']);
-Route::put('/EstadoComandas/{estadoComanda}', [EstadoComandaController::class, 'update']);
-Route::delete('/EstadoComandas/{estadoComanda}', [EstadoComandaController::class, 'destroy']);
+Route::apiResource('estado-comandas', EstadoComandaController::class);
 
 //Mesa rutas
-Route::get('/mesas', [MesaController::class, 'index']);
-Route::post('/mesas', [MesaController::class, 'store']);
-Route::get('/mesas/{mesa}', [MesaController::class, 'show']);
-Route::put('/mesas/{mesa}', [MesaController::class, 'update']);
-Route::delete('/mesas/{mesa}', [MesaController::class, 'destroy']);
+Route::apiResource('mesas', MesaController::class);
 
 //Metodos de pago
-Route::get('/metodos-pago', [MetodoPagoController::class, 'index']);
-Route::post('/metodos-pago', [MetodoPagoController::class, 'store']);
-Route::get('/metodos-pago/{metodoPago}', [MetodoPagoController::class, 'show']);
-Route::put('/metodos-pago/{metodoPago}', [MetodoPagoController::class, 'update']);
-Route::delete('/metodos-pago/{metodoPago}', [MetodoPagoController::class, 'destroy']);
+Route::apiResource('metodos-pago', MetodoPagoController::class);
 
 //Producto
-Route::get('/productos', [ProductoController::class, 'index']);
-Route::post('/productos', [ProductoController::class, 'store']);
-Route::get('/productos/{producto}', [ProductoController::class, 'show']);
-Route::put('/productos/{producto}', [ProductoController::class, 'update']);
-Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
+Route::apiResource('productos', ProductoController::class);
 
 //Role
-Route::get('/roles', [RoleController::class, 'index']);
-Route::post('/roles', [RoleController::class, 'store']);
-Route::get('/roles/{role}', [RoleController::class, 'show']);
-Route::put('/roles/{role}', [RoleController::class, 'update']);
-Route::delete('/roles/{role}', [RoleController::class, 'destroy']);
+Route::apiResource('roles', RoleController::class);
 
 //Unidad de medida
-Route::get('/unidad-medida', [UnidadMedidaController::class, 'index']);
-Route::post('/unidad-medida', [UnidadMedidaController::class, 'store']);
-Route::get('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'show']);
-Route::put('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'update']);
-Route::delete('/unidad-medida/{unidadMedida}', [UnidadMedidaController::class, 'destroy']);
+Route::apiResource('unidad-medida', UnidadMedidaController::class);
 
 //User
-Route::get('/users', [UserController::class, 'index']);
-Route::post('/users', [UserController::class, 'store']);
-Route::get('/users/{user}', [UserController::class, 'show']);
-Route::put('/users/{user}', [UserController::class, 'update']);
-Route::delete('/users/{user}', [UserController::class, 'destroy']);
+Route::apiResource('users', UserController::class);
