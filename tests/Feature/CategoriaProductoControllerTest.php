@@ -13,23 +13,23 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('lista, crea, muestra y actualiza categorias por la api', function () {
-    $this->getJson('/api/categories')->assertOk();
+    $this->getJson('/api/categorias')->assertOk();
 
-    $creada = $this->postJson('/api/categories', ['nombre' => 'Postres'])
+    $creada = $this->postJson('/api/categorias', ['nombre' => 'Postres'])
         ->assertCreated()
         ->json('data');
 
-    $this->getJson("/api/categories/{$creada['id']}")
+    $this->getJson("/api/categorias/{$creada['id']}")
         ->assertOk()
         ->assertJsonPath('data.nombre', 'Postres');
 
-    $this->putJson("/api/categories/{$creada['id']}", ['nombre' => 'Postres y repostería'])
+    $this->putJson("/api/categorias/{$creada['id']}", ['nombre' => 'Postres y repostería'])
         ->assertOk()
         ->assertJsonPath('data.nombre', 'Postres y repostería');
 });
 
 test('rechaza crear una categoria sin nombre', function () {
-    $this->postJson('/api/categories', [])
+    $this->postJson('/api/categorias', [])
         ->assertStatus(422)
         ->assertJsonValidationErrors('nombre');
 });
@@ -43,7 +43,7 @@ test('no se puede eliminar una categoria con productos asociados', function () {
         'disponible' => true,
     ]);
 
-    $this->deleteJson("/api/categories/{$categoria->id}")
+    $this->deleteJson("/api/categorias/{$categoria->id}")
         ->assertStatus(409)
         ->assertJsonPath('codigo', 'categoria_con_productos');
 });

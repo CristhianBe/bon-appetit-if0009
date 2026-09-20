@@ -2,46 +2,66 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoriaStoreRequest;
+use App\Http\Requests\CategoriaUpdateRequest;
+use App\Http\Resources\CategoriaResource;
 use App\Models\Categoria;
-use App\Http\Resources\ProductoResource;
+use App\Services\CategoriaService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CategoriaController extends Controller
 {
+    public function __construct(private CategoriaService $categoriaService) {}
 
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
     {
-        //
+        $categorias = $this->categoriaService->listar($request->only(['q', 'por_pagina']));
+
+        return CategoriaResource::collection($categorias);
     }
 
-
-    public function store(Request $request)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(CategoriaStoreRequest $request)
     {
-        //
+        $categoria = $this->categoriaService->crear($request->validated());
+
+        return CategoriaResource::make($categoria)
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED)
+            ->header('Location', route('categorias.show', $categoria));
     }
 
-
-    public function show(string $id)
+    /**
+     * Display the specified resource.
+     */
+    public function show(Categoria $category)
     {
-        //
+        return CategoriaResource::make($category->load('productos'));
     }
 
-
-    public function update(Request $request, string $id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(CategoriaUpdateRequest $request, Categoria $category)
     {
-        //
+        $categoria = $this->categoriaService->actualizar($category, $request->validated());
+
+        return CategoriaResource::make($categoria);
     }
 
- 
-    public function destroy(string $id)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Categoria $category)
     {
-        //
-    }
+        $this->categoriaService->eliminar($category);
 
-
-    public function productos($id)
-    {
-        $categoria = Categoria::with('productos')->findOrFail($id);
-        return ProductoResource::collection($categoria->productos);
+        return response()->noContent();
     }
 }

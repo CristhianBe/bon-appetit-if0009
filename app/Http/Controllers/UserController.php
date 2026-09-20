@@ -11,11 +11,17 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
         return UserResource::collection(User::with('rol')->orderBy('name')->paginate(15));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(UserStoreRequest $request)
     {
         $datos = $request->validated();
@@ -25,14 +31,21 @@ class UserController extends Controller
 
         return UserResource::make($user->load('rol'))
             ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+            ->setStatusCode(Response::HTTP_CREATED)
+            ->header('Location', route('usuarios.show', $user));
     }
 
+    /**
+     * Display the specified resource.
+     */
     public function show(User $user)
     {
         return UserResource::make($user->load('rol'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(UserUpdateRequest $request, User $user)
     {
         $datos = $request->validated();
@@ -46,6 +59,9 @@ class UserController extends Controller
         return UserResource::make($user->refresh()->load('rol'));
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(User $user)
     {
         $user->delete();

@@ -58,8 +58,7 @@ test('agrega detalle, cierra la comanda con descuento y libera la mesa', functio
     ])->json('data');
 
     // 4 unidades x 5200 = 20800, supera el umbral de 15000 -> 10% de descuento
-    $this->postJson('/api/DetalleComandas', [
-        'comanda_id' => $comanda['id'],
+    $this->postJson("/api/comandas/{$comanda['id']}/detalles", [
         'producto_id' => $producto->id,
         'cantidad' => 4,
     ])->assertCreated();
@@ -103,8 +102,7 @@ test('no se puede modificar el detalle de una comanda ya cerrada', function () {
         'user_id' => $this->mesero->id,
     ])->json('data');
 
-    $detalle = $this->postJson('/api/DetalleComandas', [
-        'comanda_id' => $comanda['id'],
+    $detalle = $this->postJson("/api/comandas/{$comanda['id']}/detalles", [
         'producto_id' => $producto->id,
         'cantidad' => 1,
     ])->json('data');
@@ -112,11 +110,11 @@ test('no se puede modificar el detalle de una comanda ya cerrada', function () {
     $estadoCerrada = EstadoComanda::where('codigo', 'cerrada')->first();
     $this->putJson("/api/comandas/{$comanda['id']}", ['estado_comanda_id' => $estadoCerrada->id])->assertOk();
 
-    $this->putJson("/api/DetalleComandas/{$detalle['id']}", ['cantidad' => 2])
+    $this->putJson("/api/detalles/{$detalle['id']}", ['cantidad' => 2])
         ->assertStatus(409)
         ->assertJsonPath('codigo', 'comanda_cerrada_no_editable');
 
-    $this->deleteJson("/api/DetalleComandas/{$detalle['id']}")
+    $this->deleteJson("/api/detalles/{$detalle['id']}")
         ->assertStatus(409)
         ->assertJsonPath('codigo', 'comanda_cerrada_no_editable');
 });
@@ -135,8 +133,7 @@ test('no se puede agregar un producto no disponible a una comanda', function () 
         'user_id' => $this->mesero->id,
     ])->json('data');
 
-    $this->postJson('/api/DetalleComandas', [
-        'comanda_id' => $comanda['id'],
+    $this->postJson("/api/comandas/{$comanda['id']}/detalles", [
         'producto_id' => $producto->id,
         'cantidad' => 1,
     ])->assertStatus(422)->assertJsonPath('codigo', 'producto_no_disponible');

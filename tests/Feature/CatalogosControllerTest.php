@@ -23,15 +23,15 @@ test('crud completo de mesas por la api', function () {
 });
 
 test('crud completo de estados de comanda por la api', function () {
-    $this->getJson('/api/EstadoComandas')->assertOk();
+    $this->getJson('/api/estados-comanda')->assertOk();
 
-    $estado = $this->postJson('/api/EstadoComandas', ['codigo' => 'lista', 'nombre' => 'Lista'])
+    $estado = $this->postJson('/api/estados-comanda', ['codigo' => 'lista', 'nombre' => 'Lista'])
         ->assertCreated()->json('data');
 
-    $this->putJson("/api/EstadoComandas/{$estado['id']}", ['nombre' => 'Lista para servir'])
+    $this->putJson("/api/estados-comanda/{$estado['id']}", ['nombre' => 'Lista para servir'])
         ->assertOk()->assertJsonPath('data.nombre', 'Lista para servir');
 
-    $this->deleteJson("/api/EstadoComandas/{$estado['id']}")->assertNoContent();
+    $this->deleteJson("/api/estados-comanda/{$estado['id']}")->assertNoContent();
 });
 
 test('crud completo de metodos de pago por la api', function () {
@@ -43,11 +43,11 @@ test('crud completo de metodos de pago por la api', function () {
 });
 
 test('crud completo de unidades de medida por la api', function () {
-    $unidad = $this->postJson('/api/unidad-medida', ['codigo' => 'kg', 'nombre' => 'Kilogramo'])
+    $unidad = $this->postJson('/api/unidades-medida', ['codigo' => 'kg', 'nombre' => 'Kilogramo'])
         ->assertCreated()->json('data');
 
-    $this->getJson('/api/unidad-medida')->assertOk();
-    $this->deleteJson("/api/unidad-medida/{$unidad['id']}")->assertNoContent();
+    $this->getJson('/api/unidades-medida')->assertOk();
+    $this->deleteJson("/api/unidades-medida/{$unidad['id']}")->assertNoContent();
 });
 
 test('crud completo de roles por la api', function () {
@@ -61,7 +61,7 @@ test('crud completo de roles por la api', function () {
 });
 
 test('crud completo de usuarios por la api sin exponer la contraseña', function () {
-    $user = $this->postJson('/api/users', [
+    $user = $this->postJson('/api/usuarios', [
         'name' => 'Ana Mesera',
         'email' => 'ana@bonappetit.test',
         'password' => 'password123',
@@ -69,8 +69,8 @@ test('crud completo de usuarios por la api sin exponer la contraseña', function
 
     expect($user)->not->toHaveKey('password');
 
-    $this->getJson('/api/users')->assertOk();
-    $this->putJson("/api/users/{$user['id']}", ['name' => 'Ana M.'])
+    $this->getJson('/api/usuarios')->assertOk();
+    $this->putJson("/api/usuarios/{$user['id']}", ['name' => 'Ana M.'])
         ->assertOk()->assertJsonPath('data.name', 'Ana M.');
-    $this->deleteJson("/api/users/{$user['id']}")->assertNoContent();
+    $this->deleteJson("/api/usuarios/{$user['id']}")->assertNoContent();
 });
