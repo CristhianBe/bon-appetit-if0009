@@ -10,9 +10,13 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'    => $this->id,
-            'name'  => $this->name ?? null,
-            'email' => $this->email ?? null,
+            'id'         => $this->id,
+            'name'       => $this->name,
+            'email'      => $this->email,
+            'rol_id'     => $this->rol_id,
+            'rol'        => new RoleResource($this->whenLoaded('rol')),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

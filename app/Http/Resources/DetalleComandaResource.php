@@ -7,11 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DetalleComandaResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
@@ -20,7 +15,7 @@ class DetalleComandaResource extends JsonResource
             'producto_id'     => $this->producto_id,
             'cantidad'        => (int) $this->cantidad,
             'precio_unitario' => (float) $this->precio_unitario,
-            'subtotal'        => (float) $this->subtotal,
+            'subtotal'        => (float) ($this->subtotal ?? round($this->cantidad * $this->precio_unitario, 2)),
             'notas'           => $this->notas,
             'producto'        => new ProductoResource($this->whenLoaded('producto')),
         ];

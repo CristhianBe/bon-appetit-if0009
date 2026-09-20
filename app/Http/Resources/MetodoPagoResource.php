@@ -11,7 +11,8 @@ class MetodoPagoResource extends JsonResource
     {
         return [
             'id'     => $this->id,
-            'nombre' => $this->nombre ?? null,
+            'codigo' => $this->codigo,
+            'nombre' => $this->nombre,
         ];
     }
 }

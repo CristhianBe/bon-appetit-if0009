@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\ReglaNegocioException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,4 +20,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Traduce las excepciones de reglas de negocio (Lab 4) a una respuesta
+        // JSON consistente, usando el status y código que cada regla ya trae.
+        $exceptions->render(function (ReglaNegocioException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'codigo' => $e->codigo(),
+                ], $e->statusSugerido());
+            }
+        });
     })->create();
