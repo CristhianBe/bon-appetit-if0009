@@ -1,0 +1,322 @@
+{
+  "info": {
+    "name": "Bon Appetit API — Lab 5",
+    "description": "Colección de pruebas de la API REST de Bon Appetit (IF0009). Cubre casos correctos y de error para los recursos principales: categorías, productos, comandas y detalles de comanda.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "categoria_id", "value": "1" },
+    { "key": "producto_id", "value": "1" },
+    { "key": "comanda_id", "value": "1" },
+    { "key": "detalle_id", "value": "1" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Categorías",
+      "item": [
+        {
+          "name": "Listar categorías (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/categorias", "host": ["{{base_url}}"], "path": ["categorias"] }
+          }
+        },
+        {
+          "name": "Crear categoría (201 + Location)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Bebidas\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/categorias", "host": ["{{base_url}}"], "path": ["categorias"] }
+          }
+        },
+        {
+          "name": "Crear categoría sin nombre (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{base_url}}/categorias", "host": ["{{base_url}}"], "path": ["categorias"] }
+          }
+        },
+        {
+          "name": "Ver categoría (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/categorias/{{categoria_id}}", "host": ["{{base_url}}"], "path": ["categorias", "{{categoria_id}}"] }
+          }
+        },
+        {
+          "name": "Ver categoría inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/categorias/999999", "host": ["{{base_url}}"], "path": ["categorias", "999999"] }
+          }
+        },
+        {
+          "name": "Actualizar categoría (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Bebidas frías\"\n}" },
+            "url": { "raw": "{{base_url}}/categorias/{{categoria_id}}", "host": ["{{base_url}}"], "path": ["categorias", "{{categoria_id}}"] }
+          }
+        },
+        {
+          "name": "Eliminar categoría con productos asociados (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/categorias/{{categoria_id}}", "host": ["{{base_url}}"], "path": ["categorias", "{{categoria_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "Listar productos (200, paginado)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/productos?por_pagina=15",
+              "host": ["{{base_url}}"],
+              "path": ["productos"],
+              "query": [{ "key": "por_pagina", "value": "15" }]
+            }
+          }
+        },
+        {
+          "name": "Crear producto (201 + Location)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Limonada\",\n  \"precio\": 1500,\n  \"categoria_id\": {{categoria_id}},\n  \"disponible\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/productos", "host": ["{{base_url}}"], "path": ["productos"] }
+          }
+        },
+        {
+          "name": "Crear producto con categoría inexistente (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Limonada\",\n  \"precio\": 1500,\n  \"categoria_id\": 999999,\n  \"disponible\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/productos", "host": ["{{base_url}}"], "path": ["productos"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comandas",
+      "item": [
+        {
+          "name": "Listar comandas (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/comandas", "host": ["{{base_url}}"], "path": ["comandas"] }
+          }
+        },
+        {
+          "name": "Abrir comanda (201 + Location)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mesa_id\": 1,\n  \"mesero_id\": 1\n}"
+            },
+            "url": { "raw": "{{base_url}}/comandas", "host": ["{{base_url}}"], "path": ["comandas"] }
+          }
+        },
+        {
+          "name": "Ver comanda (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/comandas/{{comanda_id}}", "host": ["{{base_url}}"], "path": ["comandas", "{{comanda_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Detalles de comanda (recurso anidado)",
+      "item": [
+        {
+          "name": "Listar detalles de una comanda (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/comandas/{{comanda_id}}/detalles",
+              "host": ["{{base_url}}"],
+              "path": ["comandas", "{{comanda_id}}", "detalles"]
+            }
+          }
+        },
+        {
+          "name": "Agregar detalle a comanda abierta (201 + Location)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"producto_id\": {{producto_id}},\n  \"cantidad\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/comandas/{{comanda_id}}/detalles",
+              "host": ["{{base_url}}"],
+              "path": ["comandas", "{{comanda_id}}", "detalles"]
+            }
+          }
+        },
+        {
+          "name": "Agregar detalle a comanda cerrada (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"producto_id\": {{producto_id}},\n  \"cantidad\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/comandas/2/detalles",
+              "host": ["{{base_url}}"],
+              "path": ["comandas", "2", "detalles"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar cantidad de un detalle (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 3\n}" },
+            "url": { "raw": "{{base_url}}/detalles/{{detalle_id}}", "host": ["{{base_url}}"], "path": ["detalles", "{{detalle_id}}"] }
+          }
+        },
+        {
+          "name": "Eliminar un detalle (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/detalles/{{detalle_id}}", "host": ["{{base_url}}"], "path": ["detalles", "{{detalle_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catálogos",
+      "item": [
+        {
+          "name": "Listar mesas (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/mesas", "host": ["{{base_url}}"], "path": ["mesas"] }
+          }
+        },
+        {
+          "name": "Listar estados de comanda (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/estados-comanda", "host": ["{{base_url}}"], "path": ["estados-comanda"] }
+          }
+        },
+        {
+          "name": "Listar métodos de pago (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/metodos-pago", "host": ["{{base_url}}"], "path": ["metodos-pago"] }
+          }
+        },
+        {
+          "name": "Listar unidades de medida (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/unidades-medida", "host": ["{{base_url}}"], "path": ["unidades-medida"] }
+          }
+        },
+        {
+          "name": "Listar roles (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/roles", "host": ["{{base_url}}"], "path": ["roles"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios (200)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/usuarios", "host": ["{{base_url}}"], "path": ["usuarios"] }
+          }
+        },
+        {
+          "name": "Ver usuario inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/usuarios/999999", "host": ["{{base_url}}"], "path": ["usuarios", "999999"] }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -17,29 +17,37 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::apiResource('categorias', CategoriaController::class);
-Route::apiResource('categories', CategoriaController::class);
-Route::apiResource('productos', ProductoController::class);
-Route::apiResource('mesas', MesaController::class);
+// Rutas orientadas a recursos (Lab 5): sustantivos en plural, sin verbos.
+// El nombre de cada parámetro se conserva igual al de los controladores
+// (category, user, etc.) para no tener que retocar el binding existente.
+
+Route::apiResource('categorias', CategoriaController::class)
+    ->parameters(['categorias' => 'category']);
+
 Route::apiResource('comandas', ComandaController::class);
-Route::apiResource('comanda-detalle', DetalleComandaController::class);
-Route::apiResource('users', UserController::class);
+
+// DetalleComanda es una relación de Comanda: se anida bajo /comandas/{comanda}/detalles
+// para el listado y la creación, y queda "shallow" (/detalles/{detalle}) para
+// mostrar, actualizar y eliminar un detalle puntual — así no hace falta repetir
+// el id de la comanda en cada operación sobre un detalle ya existente.
+Route::apiResource('comandas.detalles', DetalleComandaController::class)
+    ->parameters(['detalles' => 'detalleComanda'])
+    ->shallow();
+
+Route::apiResource('estados-comanda', EstadoComandaController::class)
+    ->parameters(['estados-comanda' => 'estadoComanda']);
+
+Route::apiResource('mesas', MesaController::class);
+
+Route::apiResource('metodos-pago', MetodoPagoController::class)
+    ->parameters(['metodos-pago' => 'metodoPago']);
+
+Route::apiResource('productos', ProductoController::class);
 
 Route::apiResource('roles', RoleController::class);
-Route::apiResource('estado-comandas', EstadoComandaController::class);
-Route::apiResource('estados-comanda', EstadoComandaController::class);
-Route::apiResource('metodos-pago', MetodoPagoController::class);
-Route::apiResource('unidad-medida', UnidadMedidaController::class);
-Route::apiResource('unidades-medida', UnidadMedidaController::class);
 
-Route::get('categorias/{categoria}/productos', [CategoriaController::class, 'productos'])
-    ->name('categorias.productos.index');
+Route::apiResource('unidades-medida', UnidadMedidaController::class)
+    ->parameters(['unidades-medida' => 'unidadMedida']);
 
-Route::get('mesas/{mesa}/comandas', [MesaController::class, 'comandas'])
-    ->name('mesas.comandas.index');
-
-Route::get('comandas/{comanda}/detalles', [DetalleComandaController::class, 'indexByComanda'])
-    ->name('comandas.detalles.index');
-
-Route::post('comandas/{comanda}/detalles', [DetalleComandaController::class, 'storeByComanda'])
-    ->name('comandas.detalles.store');
+Route::apiResource('usuarios', UserController::class)
+    ->parameters(['usuarios' => 'user']);

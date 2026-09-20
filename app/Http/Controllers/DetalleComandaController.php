@@ -8,38 +8,53 @@ use App\Http\Resources\DetalleComandaResource;
 use App\Models\Comanda;
 use App\Models\DetalleComanda;
 use App\Services\ComandaService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class DetalleComandaController extends Controller
 {
     public function __construct(private ComandaService $comandaService) {}
 
-    public function index()
+    /**
+     * Display a listing of the resource.
+     *
+     * Anidado bajo /comandas/{comanda}/detalles.
+     */
+    public function index(Comanda $comanda)
     {
-        $detalles = DetalleComanda::with('producto')->latest()->paginate(15);
+        $detalles = $comanda->detalles()->with('producto')->latest()->paginate(15);
 
         return DetalleComandaResource::collection($detalles);
     }
 
-
-    public function store(DetalleComandaStoreRequest $request)
+    /**
+     * Store a newly created resource in storage.
+     *
+     * Anidado bajo /comandas/{comanda}/detalles: la comanda ya viene resuelta
+     * por el model binding de la ruta, no hace falta repetirla en el body.
+     */
+    public function store(DetalleComandaStoreRequest $request, Comanda $comanda)
     {
-        $datos = $request->validated();
-        $comanda = Comanda::findOrFail($datos['comanda_id']);
-
-        $detalle = $this->comandaService->agregarDetalle($comanda, $datos);
+        $detalle = $this->comandaService->agregarDetalle($comanda, $request->validated());
 
         return DetalleComandaResource::make($detalle->load('producto'))
             ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+            ->setStatusCode(Response::HTTP_CREATED)
+            ->header('Location', route('detalles.show', $detalle));
     }
+
+    /**
+     * Display the specified resource.
+     *
+     * Ruta "shallow": /detalles/{detalleComanda}, sin repetir la comanda.
+     */
     public function show(DetalleComanda $detalleComanda)
     {
         return DetalleComandaResource::make($detalleComanda->load('producto'));
     }
 
-
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(DetalleComandaUpdateRequest $request, DetalleComanda $detalleComanda)
     {
         $detalle = $this->comandaService->actualizarDetalle($detalleComanda, $request->validated());
@@ -47,40 +62,13 @@ class DetalleComandaController extends Controller
         return DetalleComandaResource::make($detalle->load('producto'));
     }
 
-
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(DetalleComanda $detalleComanda)
     {
         $this->comandaService->quitarDetalle($detalleComanda->comanda, $detalleComanda);
 
         return response()->noContent();
-    }
-
-
-    public function indexByComanda($comandaId)
-    {
-        $detalles = DetalleComanda::where('comanda_id', $comandaId)
-            ->with('producto')
-            ->paginate(10);
-
-        return DetalleComandaResource::collection($detalles);
-    }
-
-    public function storeByComanda(Request $request, $comandaId)
-    {
-        $data = $request->validate([
-            'producto_id'     => 'required|exists:productos,id',
-            'cantidad'        => 'required|integer|min:1',
-            'precio_unitario' => 'required|numeric',
-            'notas'           => 'nullable|string',
-        ]);
-
-        $data['comanda_id'] = $comandaId;
-        $data['subtotal'] = $data['cantidad'] * $data['precio_unitario'];
-
-        $detalle = DetalleComanda::create($data);
-
-        return (new DetalleComandaResource($detalle))
-            ->response()
-            ->setStatusCode(201);
     }
 }
