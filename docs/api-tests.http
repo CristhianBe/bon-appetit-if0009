@@ -1,0 +1,133 @@
+@base_url = http://127.0.0.1:8000/api
+@token = TU_TOKEN_SANCTUM_AQUI
+
+GET {{base_url}}/categorias
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+POST {{base_url}}/categorias
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Bebidas Frías",
+    "descripcion": "Refrescos y jugos naturales"
+}
+
+###
+
+POST {{base_url}}/categorias
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": ""
+}
+
+###
+
+GET {{base_url}}/categorias/99999
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+GET {{base_url}}/categorias/1/productos
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+GET {{base_url}}/productos?categoria=1&solo_disponibles=1&por_pagina=5
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+POST {{base_url}}/productos
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Jugo de Naranja",
+    "precio": 1500,
+    "categoria_id": 1,
+    "disponible": true
+}
+
+###
+
+GET {{base_url}}/productos
+Accept: application/json
+
+###
+
+GET {{base_url}}/mesas
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+POST {{base_url}}/mesas
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+{
+    "numero": 10,
+    "capacidad": 4,
+    "estado_id": 1
+}
+
+###
+
+GET {{base_url}}/mesas/1/comandas
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+GET {{base_url}}/comandas
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+GET {{base_url}}/comandas/1/detalles
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+POST {{base_url}}/comandas/1/detalles
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+{
+    "producto_id": 1,
+    "cantidad": 2,
+    "precio_unitario": 1500
+}
+
+###
+
+POST {{base_url}}/comandas/1/detalles
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+{
+    "cantidad": -5
+}
+
+###
+
+GET {{base_url}}/users
+Accept: application/json
+Authorization: Bearer {{token}}
