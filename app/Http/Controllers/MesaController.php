@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Mesa;
+use App\Http\Resources\ComandaResource;
+use Illuminate\Http\Request;
+
+class MesaController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+
+    /**
+     * Obtener las comandas asociadas a una mesa específica (Ruta Anidada - Lab 5)
+     */
+    public function comandas($id)
+    {
+        $mesa = Mesa::with('comandas')->findOrFail($id);
+        return ComandaResource::collection($mesa->comandas);
+    }
+}
