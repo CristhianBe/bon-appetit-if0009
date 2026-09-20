@@ -1,0 +1,52 @@
+openapi: 3.0.3
+info:
+  title: Bon Appetit API - Módulo de Comandas y Productos
+  description: API RESTful para la gestión del restaurante Bon Appetit (IF0009).
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000/api
+    description: Servidor de Desarrollo Local
+paths:
+  /comandas:
+    get:
+      summary: Listar todas las comandas
+      responses:
+        '200':
+          description: Lista de comandas obtenida exitosamente
+    post:
+      summary: Crear una nueva comanda
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mesa_id:
+                  type: integer
+                  example: 1
+                estado_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Comanda creada correctamente
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL del recurso recién creado
+  /comandas/{id}:
+    get:
+      summary: Obtener detalle de una comanda
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalle de la comanda
+        '404':
+          description: Comanda no encontrada
