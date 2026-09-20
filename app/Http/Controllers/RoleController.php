@@ -10,17 +10,11 @@ use Illuminate\Http\Response;
 
 class RoleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return RoleResource::collection(Role::orderBy('nombre')->paginate(15));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(RoleStoreRequest $request)
     {
         $role = Role::create($request->validated());
@@ -30,17 +24,11 @@ class RoleController extends Controller
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Role $role)
     {
         return RoleResource::make($role);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(RoleUpdateRequest $request, Role $role)
     {
         $role->update($request->validated());
@@ -48,9 +36,6 @@ class RoleController extends Controller
         return RoleResource::make($role->refresh());
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Role $role)
     {
         $role->delete();

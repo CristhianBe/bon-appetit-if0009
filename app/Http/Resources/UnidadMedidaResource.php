@@ -7,13 +7,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UnidadMedidaResource extends JsonResource
 {
-    /**
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id'     => $this->id,
             'codigo' => $this->codigo,
             'nombre' => $this->nombre,
         ];

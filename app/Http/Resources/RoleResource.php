@@ -7,14 +7,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class RoleResource extends JsonResource
 {
-    /**
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'nombre' => $this->nombre,
+            'id'          => $this->id,
+            'nombre'      => $this->nombre,
             'descripcion' => $this->descripcion,
         ];
     }

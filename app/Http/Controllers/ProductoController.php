@@ -14,9 +14,6 @@ class ProductoController extends Controller
 {
     public function __construct(private ProductoService $productoService) {}
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $productos = $this->productoService->listar(
@@ -26,9 +23,6 @@ class ProductoController extends Controller
         return ProductoResource::collection($productos->load('categoria'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(ProductoStoreRequest $request)
     {
         $producto = $this->productoService->crear($request->validated());
@@ -38,17 +32,11 @@ class ProductoController extends Controller
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Producto $producto)
     {
         return ProductoResource::make($producto->load('categoria'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(ProductoUpdateRequest $request, Producto $producto)
     {
         $producto = $this->productoService->actualizar($producto, $request->validated());
@@ -56,9 +44,6 @@ class ProductoController extends Controller
         return ProductoResource::make($producto->load('categoria'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Producto $producto)
     {
         $this->productoService->eliminar($producto);
