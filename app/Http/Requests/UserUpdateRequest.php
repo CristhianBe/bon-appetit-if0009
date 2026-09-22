@@ -23,7 +23,7 @@ class UserUpdateRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($user?->id),
             ],
             'password' => ['sometimes', 'required', 'string', 'min:8'],
-            'rol_id' => ['nullable', 'integer', 'exists:roles,id'],
+            'rol' => ['nullable', 'string', 'exists:roles,name'],
         ];
     }
 
@@ -33,7 +33,7 @@ class UserUpdateRequest extends FormRequest
             'email.email' => 'El correo no tiene un formato válido.',
             'email.unique' => 'Ya existe un usuario con ese correo.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'rol_id.exists' => 'El rol indicado no existe.',
+            'rol.exists' => 'El rol indicado no existe.',
         ];
     }
 }

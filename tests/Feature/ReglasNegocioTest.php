@@ -5,7 +5,6 @@ use App\Models\Categoria;
 use App\Models\EstadoMesa;
 use App\Models\Mesa;
 use App\Models\Producto;
-use App\Models\User;
 use App\Services\ComandaService;
 use App\Services\ProductoService;
 use Database\Seeders\CatalogosSeeder;
@@ -17,7 +16,11 @@ beforeEach(function () {
     $this->seed(CatalogosSeeder::class);
 
     $this->categoria = Categoria::create(['nombre' => 'Platos fuertes']);
-    $this->mesero = User::factory()->create();
+    // Estas pruebas verifican REGLAS DE NEGOCIO, no autorización (eso vive en
+    // ComandaAutorizacionTest.php): por eso el actor es directamente el mesero dueño de la
+    // comanda, con el rol asignado — así cualquier rechazo que veamos viene 100% de la regla
+    // que se está probando, no de un 403 disfrazado.
+    $this->mesero = usuarioConRol('mesero');
 
     $this->comandaService = app(ComandaService::class);
     $this->productoService = app(ProductoService::class);
@@ -30,9 +33,9 @@ test('no se puede cerrar una comanda sin detalle', function () {
     $comanda = $this->comandaService->abrir([
         'mesa_id' => $mesa->id,
         'user_id' => $this->mesero->id,
-    ]);
+    ], $this->mesero);
 
-    $this->comandaService->cerrar($comanda);
+    $this->comandaService->cerrar($comanda, $this->mesero);
 })->throws(ReglaNegocioException::class, 'No se puede cerrar una comanda sin al menos un producto.');
 
 test('no se puede eliminar un producto que ya fue vendido', function () {
@@ -49,12 +52,12 @@ test('no se puede eliminar un producto que ya fue vendido', function () {
     $comanda = $this->comandaService->abrir([
         'mesa_id' => $mesa->id,
         'user_id' => $this->mesero->id,
-    ]);
+    ], $this->mesero);
 
     $this->comandaService->agregarDetalle($comanda, [
         'producto_id' => $producto->id,
         'cantidad' => 1,
-    ]);
+    ], $this->mesero);
 
     $this->productoService->eliminar($producto);
 })->throws(ReglaNegocioException::class, 'No se puede eliminar un producto que ya fue vendido en alguna comanda.');
@@ -73,15 +76,15 @@ test('se aplica un descuento del 10% cuando el total supera el umbral', function
     $comanda = $this->comandaService->abrir([
         'mesa_id' => $mesa->id,
         'user_id' => $this->mesero->id,
-    ]);
+    ], $this->mesero);
 
     // 4 unidades x 5200 = 20800, supera el umbral de 15000
     $this->comandaService->agregarDetalle($comanda, [
         'producto_id' => $producto->id,
         'cantidad' => 4,
-    ]);
+    ], $this->mesero);
 
-    $comandaCerrada = $this->comandaService->cerrar($comanda);
+    $comandaCerrada = $this->comandaService->cerrar($comanda, $this->mesero);
 
     expect((float) $comandaCerrada->total)->toBe(20800 * 0.9);
 });
@@ -93,7 +96,7 @@ test('no se puede abrir una comanda en una mesa que no esta libre', function () 
     $this->comandaService->abrir([
         'mesa_id' => $mesa->id,
         'user_id' => $this->mesero->id,
-    ]);
+    ], $this->mesero);
 })->throws(ReglaNegocioException::class, 'No se puede abrir una comanda en una mesa que no está libre.');
 
 test('no se puede agregar a la comanda un producto no disponible', function () {
@@ -110,12 +113,12 @@ test('no se puede agregar a la comanda un producto no disponible', function () {
     $comanda = $this->comandaService->abrir([
         'mesa_id' => $mesa->id,
         'user_id' => $this->mesero->id,
-    ]);
+    ], $this->mesero);
 
     $this->comandaService->agregarDetalle($comanda, [
         'producto_id' => $producto->id,
         'cantidad' => 1,
-    ]);
+    ], $this->mesero);
 })->throws(ReglaNegocioException::class, 'No se puede agregar un producto que no está disponible.');
 
 test('no se puede modificar el detalle de una comanda ya cerrada', function () {
@@ -132,14 +135,14 @@ test('no se puede modificar el detalle de una comanda ya cerrada', function () {
     $comanda = $this->comandaService->abrir([
         'mesa_id' => $mesa->id,
         'user_id' => $this->mesero->id,
-    ]);
+    ], $this->mesero);
 
     $detalle = $this->comandaService->agregarDetalle($comanda, [
         'producto_id' => $producto->id,
         'cantidad' => 1,
-    ]);
+    ], $this->mesero);
 
-    $comandaCerrada = $this->comandaService->cerrar($comanda);
+    $comandaCerrada = $this->comandaService->cerrar($comanda, $this->mesero);
 
-    $this->comandaService->quitarDetalle($comandaCerrada, $detalle);
+    $this->comandaService->quitarDetalle($comandaCerrada, $detalle, $this->mesero);
 })->throws(ReglaNegocioException::class, 'No se puede modificar el detalle de una comanda ya cerrada.');

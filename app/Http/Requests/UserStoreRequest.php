@@ -17,7 +17,10 @@ class UserStoreRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'rol_id' => ['nullable', 'integer', 'exists:roles,id'],
+            // Antes era "rol_id" (integer, exists:roles,id); ahora el rol se identifica por
+            // NOMBRE, porque así es como spatie/laravel-permission los busca
+            // ($user->assignRole('mesero')), no por id.
+            'rol' => ['nullable', 'string', 'exists:roles,name'],
         ];
     }
 
@@ -30,7 +33,7 @@ class UserStoreRequest extends FormRequest
             'email.unique' => 'Ya existe un usuario con ese correo.',
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'rol_id.exists' => 'El rol indicado no existe.',
+            'rol.exists' => 'El rol indicado no existe.',
         ];
     }
 }

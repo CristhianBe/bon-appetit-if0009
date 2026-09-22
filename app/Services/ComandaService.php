@@ -9,13 +9,17 @@ use App\Models\EstadoComanda;
 use App\Models\EstadoMesa;
 use App\Models\Mesa;
 use App\Models\Producto;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class ComandaService
 {
     private const UMBRAL_DESCUENTO = 15000;
+
     private const PORCENTAJE_DESCUENTO = 0.10;
+
     private const TAMANO_PAGINA_MAXIMO = 50;
 
     public function listar(array $filtros): LengthAwarePaginator
@@ -36,8 +40,28 @@ class ComandaService
         return $query->latest()->paginate($porPagina);
     }
 
-    public function abrir(array $datos): Comanda
+    /**
+     * $actor es el usuario autenticado que hace la petición. El controlador YA revisó el
+     * permiso una vez (Capa 1, con $this->authorize()); acá se vuelve a revisar (Capa 2) para
+     * que la regla se cumpla también si algo más —una consola, un job en cola, otro
+     * controlador— llama a este servicio directamente sin pasar por la ruta protegida. Es el
+     * mismo principio de "defensa en profundidad" que exige el Laboratorio 6.
+     */
+    public function abrir(array $datos, User $actor): Comanda
     {
+        // Gate::forUser($actor)->authorize(...) ejecuta ComandaPolicy::create($actor) por
+        // debajo. Si devuelve false, lanza AuthorizationException (Laravel la convierte sola
+        // en HTTP 403).
+        Gate::forUser($actor)->authorize('create', Comanda::class);
+
+        // Un mesero solo puede abrir comandas a su propio nombre: sin esto, cualquier mesero
+        // autenticado podría mandar el user_id de OTRO mesero en el body y "regalarle" (o
+        // robarle) comandas. El administrador sí puede abrir a nombre de cualquiera (ej. para
+        // corregir un dato mal cargado).
+        if (! $actor->hasRole('administrador')) {
+            $datos['user_id'] = $actor->id;
+        }
+
         $mesa = Mesa::with('estado')->findOrFail($datos['mesa_id']);
 
         if ($mesa->estado->codigo !== 'libre') {
@@ -64,8 +88,10 @@ class ComandaService
         });
     }
 
-    public function agregarDetalle(Comanda $comanda, array $datos): DetalleComanda
+    public function agregarDetalle(Comanda $comanda, array $datos, User $actor): DetalleComanda
     {
+        Gate::forUser($actor)->authorize('update', $comanda);
+
         if ($comanda->estadoComanda->codigo === 'cerrada') {
             throw new ReglaNegocioException(
                 'No se puede modificar el detalle de una comanda ya cerrada.',
@@ -93,8 +119,10 @@ class ComandaService
         ]);
     }
 
-    public function actualizarDetalle(DetalleComanda $detalle, array $datos): DetalleComanda
+    public function actualizarDetalle(DetalleComanda $detalle, array $datos, User $actor): DetalleComanda
     {
+        Gate::forUser($actor)->authorize('update', $detalle->comanda);
+
         if ($detalle->comanda->estadoComanda->codigo === 'cerrada') {
             throw new ReglaNegocioException(
                 'No se puede modificar el detalle de una comanda ya cerrada.',
@@ -108,8 +136,12 @@ class ComandaService
         return $detalle->refresh();
     }
 
-    public function cerrar(Comanda $comanda): Comanda
+    public function cerrar(Comanda $comanda, User $actor): Comanda
     {
+        // Cerrar es una forma de "editar" la comanda (cambia su estado), así que usa el mismo
+        // permiso que update(): administrador, o el mesero dueño.
+        Gate::forUser($actor)->authorize('update', $comanda);
+
         if ($comanda->detalles()->count() === 0) {
             throw new ReglaNegocioException(
                 'No se puede cerrar una comanda sin al menos un producto.',
@@ -142,8 +174,10 @@ class ComandaService
         });
     }
 
-    public function quitarDetalle(Comanda $comanda, DetalleComanda $detalle): void
+    public function quitarDetalle(Comanda $comanda, DetalleComanda $detalle, User $actor): void
     {
+        Gate::forUser($actor)->authorize('update', $comanda);
+
         if ($comanda->estadoComanda->codigo === 'cerrada') {
             throw new ReglaNegocioException(
                 'No se puede modificar el detalle de una comanda ya cerrada.',
@@ -153,5 +187,12 @@ class ComandaService
         }
 
         $detalle->delete();
+    }
+
+    public function eliminar(Comanda $comanda, User $actor): void
+    {
+        Gate::forUser($actor)->authorize('delete', $comanda);
+
+        $comanda->delete();
     }
 }

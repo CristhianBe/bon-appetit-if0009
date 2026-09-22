@@ -7,10 +7,15 @@ use App\Models\EstadoComanda;
 use App\Models\EstadoMesa;
 use App\Models\Mesa;
 use App\Models\Producto;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+// Estas pruebas verifican códigos/estructura del CRUD de categorías y productos (no
+// autorización por rol), así que el actor es un administrador: puede hacer cualquier
+// operación sin que ninguna política interfiera.
+beforeEach(fn () => Sanctum::actingAs(usuarioConRol('administrador')));
 
 test('lista, crea, muestra y actualiza categorias por la api', function () {
     $this->getJson('/api/categorias')->assertOk();
@@ -80,7 +85,7 @@ test('no se puede eliminar un producto ya vendido en una comanda', function () {
     $estadoLibre = EstadoMesa::create(['codigo' => 'libre', 'nombre' => 'Libre']);
     $estadoAbierta = EstadoComanda::create(['codigo' => 'abierta', 'nombre' => 'Abierta']);
     $mesa = Mesa::create(['numero' => 1, 'capacidad' => 4, 'estado_mesa_id' => $estadoLibre->id]);
-    $mesero = User::factory()->create();
+    $mesero = usuarioConRol('mesero');
 
     $comanda = Comanda::create([
         'mesa_id' => $mesa->id,

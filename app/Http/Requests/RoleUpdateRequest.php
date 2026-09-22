@@ -19,7 +19,7 @@ class RoleUpdateRequest extends FormRequest
         return [
             'nombre' => [
                 'sometimes', 'required', 'string', 'max:50',
-                Rule::unique('roles', 'nombre')->ignore($role?->id),
+                Rule::unique('roles', 'name')->ignore($role?->id),
             ],
             'descripcion' => ['nullable', 'string', 'max:255'],
         ];

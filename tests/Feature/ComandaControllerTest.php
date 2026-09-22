@@ -5,8 +5,8 @@ use App\Models\EstadoComanda;
 use App\Models\EstadoMesa;
 use App\Models\Mesa;
 use App\Models\Producto;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
@@ -17,7 +17,12 @@ beforeEach(function () {
     EstadoComanda::create(['codigo' => 'cerrada', 'nombre' => 'Cerrada']);
 
     $this->categoria = Categoria::create(['nombre' => 'Platos fuertes']);
-    $this->mesero = User::factory()->create();
+    $this->mesero = usuarioConRol('mesero');
+
+    // Estas pruebas verifican códigos/estructura de la API (no autorización por rol: eso vive
+    // en ComandaAutorizacionTest.php), así que el actor autenticado es un administrador, que
+    // puede hacer cualquier operación sin que la política de por-medio interfiera.
+    Sanctum::actingAs(usuarioConRol('administrador'));
 });
 
 test('abre una comanda por la api y ocupa la mesa', function () {
