@@ -62,4 +62,31 @@ Proteger las rutas con `auth:sanctum` (antes eran todas públicas) rompió 18 pr
 
 Colección actualizada: `docs/postman/bon-appetit.postman_collection.json` — carpeta nueva "Auth" (Registrar, Login, Login con credenciales incorrectas, Cambiar contraseña, Logout) al inicio de la colección. También se corrigió un campo mal escrito en la petición "Abrir comanda" ya existente (`mesero_id` → `user_id`, el nombre real que exige `ComandaStoreRequest`).
 
-Capturas pendientes de agregar en `docs/evidencia-lab6/` (mismo patrón que `proyecto-if0009`): registro, login, login con contraseña incorrecta, límite de intentos (429), comanda propia (200), comanda ajena (403), cajero sin permiso para abrir (403), logout + token revocado (401), y el resultado de `php artisan test --coverage`.
+Capturas en `docs/evidencia-lab6/`, todas contra `http://127.0.0.1:8000/api` (`php artisan serve`):
+
+### 6.1 Flujo de autenticación
+
+| # | Evidencia | Resultado |
+|---|---|---|
+| 1 | [Registro de una cuenta nueva](evidencia-lab6/01-registro-201.png) | `201 Created` |
+| 2 | [Login correcto](evidencia-lab6/02-login-200.png) | `200 OK` + token |
+| 3 | [Login con contraseña incorrecta](evidencia-lab6/03-login-credenciales-incorrectas-401.png) | `401` — mensaje genérico |
+| 4 | [Sexto intento de login en el mismo minuto](evidencia-lab6/04-login-limite-intentos-429.png) | `429 Too Many Requests` |
+| 5 | [Logout](evidencia-lab6/05-logout-204.png) | `204 No Content` |
+| 6 | [Reuso del token ya revocado](evidencia-lab6/06-token-revocado-401.png) | `401` — el token no sirve más aunque no haya expirado |
+
+### 6.2 Autorización (acceso permitido / denegado)
+
+| # | Evidencia | Resultado |
+|---|---|---|
+| 7 | [Mesero ve su propia comanda](evidencia-lab6/07-ver-comanda-propia-200.png) | `200 OK` |
+| 8 | [Mesero intenta ver la comanda de otra persona](evidencia-lab6/08-ver-comanda-ajena-403.png) | **`403 Forbidden`** — la política filtra por dueño |
+| 9 | [Cajero intenta abrir una comanda](evidencia-lab6/09-cajero-abrir-comanda-403.png) | `403 Forbidden` — rol de solo lectura |
+
+### 6.3 Suite de pruebas y cobertura
+
+| # | Evidencia | Resultado |
+|---|---|---|
+| 10 | [`php artisan test --coverage --min=70`](evidencia-lab6/10-cobertura-86.2.png) | **53 passed** · **Total: 86.2 %** |
+
+> **Nota técnica:** las respuestas `429` y `403` de las capturas incluyen la traza de la excepción porque el entorno local corre con `APP_DEBUG=true` (normal en desarrollo). `ThrottleRequestsException` es la única excepción que `bootstrap/app.php` no traduce todavía a un JSON limpio (a diferencia de `AuthenticationException`/`AuthorizationException`, que sí); queda anotado como mejora menor para un futuro laboratorio.
