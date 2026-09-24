@@ -7,16 +7,22 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
+
+    // HasRoles (spatie/laravel-permission) reemplaza la relación "rol()" (belongsTo, un solo
+    // rol vía rol_id) que tenía este modelo antes: ahora trae $user->roles(), $user->hasRole(),
+    // $user->assignRole(), $user->syncRoles(), etc. El negocio sigue siendo "un rol por usuario"
+    // (ver UserController), pero la tabla ya soporta más de uno si hiciera falta más adelante.
 
     /**
      * Get the attributes that should be cast.
@@ -29,10 +35,5 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function rol(): BelongsTo
-    {
-        return $this->belongsTo(Role::class, 'rol_id');
     }
 }

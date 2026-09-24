@@ -8,6 +8,7 @@ use App\Http\Resources\DetalleComandaResource;
 use App\Models\Comanda;
 use App\Models\DetalleComanda;
 use App\Services\ComandaService;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class DetalleComandaController extends Controller
@@ -21,6 +22,8 @@ class DetalleComandaController extends Controller
      */
     public function index(Comanda $comanda)
     {
+        $this->authorize('view', $comanda);
+
         $detalles = $comanda->detalles()->with('producto')->latest()->paginate(15);
 
         return DetalleComandaResource::collection($detalles);
@@ -34,7 +37,11 @@ class DetalleComandaController extends Controller
      */
     public function store(DetalleComandaStoreRequest $request, Comanda $comanda)
     {
-        $detalle = $this->comandaService->agregarDetalle($comanda, $request->validated());
+        // Capa 1: agregar una línea es una forma de "editar" la comanda (mismo permiso que
+        // ComandaController::update). La Capa 2 vuelve a chequearlo dentro del servicio.
+        $this->authorize('update', $comanda);
+
+        $detalle = $this->comandaService->agregarDetalle($comanda, $request->validated(), $request->user());
 
         return DetalleComandaResource::make($detalle->load('producto'))
             ->response()
@@ -49,6 +56,8 @@ class DetalleComandaController extends Controller
      */
     public function show(DetalleComanda $detalleComanda)
     {
+        $this->authorize('view', $detalleComanda->comanda);
+
         return DetalleComandaResource::make($detalleComanda->load('producto'));
     }
 
@@ -57,7 +66,9 @@ class DetalleComandaController extends Controller
      */
     public function update(DetalleComandaUpdateRequest $request, DetalleComanda $detalleComanda)
     {
-        $detalle = $this->comandaService->actualizarDetalle($detalleComanda, $request->validated());
+        $this->authorize('update', $detalleComanda->comanda);
+
+        $detalle = $this->comandaService->actualizarDetalle($detalleComanda, $request->validated(), $request->user());
 
         return DetalleComandaResource::make($detalle->load('producto'));
     }
@@ -65,9 +76,11 @@ class DetalleComandaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(DetalleComanda $detalleComanda)
+    public function destroy(DetalleComanda $detalleComanda, Request $request)
     {
-        $this->comandaService->quitarDetalle($detalleComanda->comanda, $detalleComanda);
+        $this->authorize('update', $detalleComanda->comanda);
+
+        $this->comandaService->quitarDetalle($detalleComanda->comanda, $detalleComanda, $request->user());
 
         return response()->noContent();
     }

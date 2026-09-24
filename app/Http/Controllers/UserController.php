@@ -16,7 +16,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        return UserResource::collection(User::with('rol')->orderBy('name')->paginate(15));
+        return UserResource::collection(User::with('roles')->orderBy('name')->paginate(15));
     }
 
     /**
@@ -25,11 +25,18 @@ class UserController extends Controller
     public function store(UserStoreRequest $request)
     {
         $datos = $request->validated();
+        $rol = $datos['rol'] ?? null;
+        unset($datos['rol']); // "rol" no es una columna de users: se asigna aparte, vía Spatie.
+
         $datos['password'] = Hash::make($datos['password']);
 
         $user = User::create($datos);
 
-        return UserResource::make($user->load('rol'))
+        if ($rol) {
+            $user->assignRole($rol);
+        }
+
+        return UserResource::make($user->load('roles'))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED)
             ->header('Location', route('usuarios.show', $user));
@@ -40,7 +47,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return UserResource::make($user->load('rol'));
+        return UserResource::make($user->load('roles'));
     }
 
     /**
@@ -49,6 +56,9 @@ class UserController extends Controller
     public function update(UserUpdateRequest $request, User $user)
     {
         $datos = $request->validated();
+        $rolProvisto = array_key_exists('rol', $datos);
+        $rol = $datos['rol'] ?? null;
+        unset($datos['rol']);
 
         if (isset($datos['password'])) {
             $datos['password'] = Hash::make($datos['password']);
@@ -56,7 +66,14 @@ class UserController extends Controller
 
         $user->update($datos);
 
-        return UserResource::make($user->refresh()->load('rol'));
+        // syncRoles() reemplaza el rol actual por el nuevo (o lo quita, si mandaron rol: null) —
+        // coherente con el negocio de "un solo rol por usuario". Solo se toca si el campo vino
+        // en la petición; si no vino, el rol actual queda intacto.
+        if ($rolProvisto) {
+            $user->syncRoles($rol ? [$rol] : []);
+        }
+
+        return UserResource::make($user->refresh()->load('roles'));
     }
 
     /**

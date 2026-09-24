@@ -15,7 +15,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        return RoleResource::collection(Role::orderBy('nombre')->paginate(15));
+        return RoleResource::collection(Role::orderBy('name')->paginate(15));
     }
 
     /**
@@ -23,7 +23,24 @@ class RoleController extends Controller
      */
     public function store(RoleStoreRequest $request)
     {
-        $role = Role::create($request->validated());
+        $datos = $request->validated();
+
+        // El request valida "nombre" (contrato externo); el modelo lo guarda como "name"
+        // (columna real de spatie/laravel-permission). "descripcion" sí se llama igual en los
+        // dos lados, porque es un campo propio de este proyecto, no del paquete.
+        //
+        // "guard_name" se fija explícito (no se deja en manos del default): Sanctum::actingAs()
+        // en las pruebas (y potencialmente otros flujos autenticados) cambian
+        // config('auth.defaults.guard') a "sanctum" mientras dura la petición, y Spatie usa
+        // justo ese valor por defecto al crear un rol si no se le da uno — sin esto, un rol
+        // creado durante una sesión autenticada terminaría con guard_name="sanctum" en vez de
+        // "web", y After Role::users() fallaría más tarde (guard "sanctum" no tiene un
+        // "provider" configurado en auth.guards).
+        $role = Role::create([
+            'name' => $datos['nombre'],
+            'guard_name' => 'web',
+            'descripcion' => $datos['descripcion'] ?? null,
+        ]);
 
         return RoleResource::make($role)
             ->response()
@@ -44,7 +61,14 @@ class RoleController extends Controller
      */
     public function update(RoleUpdateRequest $request, Role $role)
     {
-        $role->update($request->validated());
+        $datos = $request->validated();
+
+        if (array_key_exists('nombre', $datos)) {
+            $datos['name'] = $datos['nombre'];
+            unset($datos['nombre']);
+        }
+
+        $role->update($datos);
 
         return RoleResource::make($role->refresh());
     }

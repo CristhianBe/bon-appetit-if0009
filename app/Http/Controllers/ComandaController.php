@@ -22,6 +22,8 @@ class ComandaController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Comanda::class);
+
         $comandas = $this->comandaService->listar($request->only(['mesa_id', 'estado_comanda_id', 'por_pagina']));
 
         return ComandaResource::collection($comandas);
@@ -32,7 +34,10 @@ class ComandaController extends Controller
      */
     public function store(ComandaStoreRequest $request)
     {
-        $comanda = $this->comandaService->abrir($request->validated());
+        // Capa 1: ¿el rol de quien pide puede abrir comandas en general? (cajero no).
+        $this->authorize('create', Comanda::class);
+
+        $comanda = $this->comandaService->abrir($request->validated(), $request->user());
 
         return ComandaResource::make($comanda->load(self::RELACIONES))
             ->response()
@@ -43,8 +48,12 @@ class ComandaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Comanda $comanda)
+    public function show(Comanda $comanda, Request $request)
     {
+        // Acá nace el 403 "si no le corresponde": si ComandaPolicy::view() da false, esta
+        // línea lanza AuthorizationException y Laravel responde 403 solo.
+        $this->authorize('view', $comanda);
+
         return ComandaResource::make($comanda->load(self::RELACIONES));
     }
 
@@ -58,13 +67,15 @@ class ComandaController extends Controller
      */
     public function update(ComandaUpdateRequest $request, Comanda $comanda)
     {
+        $this->authorize('update', $comanda);
+
         $datos = $request->validated();
 
         if (isset($datos['estado_comanda_id'])) {
             $estado = EstadoComanda::find($datos['estado_comanda_id']);
 
             if ($estado && $estado->codigo === 'cerrada') {
-                $comanda = $this->comandaService->cerrar($comanda);
+                $comanda = $this->comandaService->cerrar($comanda, $request->user());
 
                 return ComandaResource::make($comanda->load(self::RELACIONES));
             }
@@ -78,9 +89,11 @@ class ComandaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Comanda $comanda)
+    public function destroy(Comanda $comanda, Request $request)
     {
-        $comanda->delete();
+        $this->authorize('delete', $comanda);
+
+        $this->comandaService->eliminar($comanda, $request->user());
 
         return response()->noContent();
     }

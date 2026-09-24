@@ -2,8 +2,11 @@
 
 use App\Models\EstadoMesa;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+beforeEach(fn () => Sanctum::actingAs(usuarioConRol('administrador')));
 
 test('crud completo de mesas por la api', function () {
     $estado = EstadoMesa::create(['codigo' => 'libre', 'nombre' => 'Libre']);
