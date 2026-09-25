@@ -78,6 +78,25 @@ test('agrega detalle, cierra la comanda con descuento y libera la mesa', functio
     expect($cerrada['mesa']['estado']['codigo'])->toBe('libre');
 });
 
+test('actualiza una comanda a un estado distinto de "cerrada" a traves del servicio', function () {
+    $mesaOrigen = Mesa::create(['numero' => 20, 'capacidad' => 4, 'estado_mesa_id' => $this->estadoLibre->id]);
+    $mesaDestino = Mesa::create(['numero' => 21, 'capacidad' => 2, 'estado_mesa_id' => $this->estadoLibre->id]);
+
+    $comanda = $this->postJson('/api/comandas', [
+        'mesa_id' => $mesaOrigen->id,
+        'user_id' => $this->mesero->id,
+    ])->json('data');
+
+    // Cambiar la mesa de una comanda abierta no pasa por cerrar(): ejercita
+    // ComandaService::actualizar(), el camino "cualquier otro cambio" que antes se resolvia
+    // directo en el controlador sin pasar por el servicio.
+    $actualizada = $this->putJson("/api/comandas/{$comanda['id']}", [
+        'mesa_id' => $mesaDestino->id,
+    ])->assertOk()->json('data');
+
+    expect($actualizada['mesa']['numero'])->toBe(21);
+});
+
 test('no se puede cerrar una comanda sin detalle', function () {
     $mesa = Mesa::create(['numero' => 13, 'capacidad' => 4, 'estado_mesa_id' => $this->estadoLibre->id]);
 
