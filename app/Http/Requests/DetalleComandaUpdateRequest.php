@@ -23,6 +23,7 @@ class DetalleComandaUpdateRequest extends FormRequest
     {
         return [
             'cantidad.required' => 'Debe indicar la cantidad.',
+            'cantidad.integer' => 'La cantidad debe ser un número entero.',
             'cantidad.min' => 'La cantidad debe ser al menos 1.',
         ];
     }

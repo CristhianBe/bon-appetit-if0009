@@ -6,7 +6,6 @@ use App\Http\Requests\ComandaStoreRequest;
 use App\Http\Requests\ComandaUpdateRequest;
 use App\Http\Resources\ComandaResource;
 use App\Models\Comanda;
-use App\Models\EstadoComanda;
 use App\Services\ComandaService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -60,30 +59,17 @@ class ComandaController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * Si el cambio de estado corresponde al estado "cerrada", se delega en
-     * ComandaService::cerrar() para aplicar la regla de negocio (no cerrar sin
-     * detalle, cálculo del descuento y liberación de la mesa). Cualquier otro
-     * cambio se aplica directamente.
+     * Toda la decisión de qué hacer con el cambio (si es cierre, va por
+     * ComandaService::cerrar(); cualquier otro cambio, por
+     * ComandaService::actualizar()) vive en el servicio, no acá.
      */
     public function update(ComandaUpdateRequest $request, Comanda $comanda)
     {
         $this->authorize('update', $comanda);
 
-        $datos = $request->validated();
+        $comanda = $this->comandaService->actualizar($comanda, $request->validated(), $request->user());
 
-        if (isset($datos['estado_comanda_id'])) {
-            $estado = EstadoComanda::find($datos['estado_comanda_id']);
-
-            if ($estado && $estado->codigo === 'cerrada') {
-                $comanda = $this->comandaService->cerrar($comanda, $request->user());
-
-                return ComandaResource::make($comanda->load(self::RELACIONES));
-            }
-        }
-
-        $comanda->update($datos);
-
-        return ComandaResource::make($comanda->refresh()->load(self::RELACIONES));
+        return ComandaResource::make($comanda->load(self::RELACIONES));
     }
 
     /**

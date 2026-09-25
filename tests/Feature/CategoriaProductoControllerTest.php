@@ -39,6 +39,12 @@ test('rechaza crear una categoria sin nombre', function () {
         ->assertJsonValidationErrors('nombre');
 });
 
+test('responde en espanol cuando el nombre de la categoria no es texto', function () {
+    $this->postJson('/api/categorias', ['nombre' => ['no', 'es', 'texto']])
+        ->assertStatus(422)
+        ->assertJsonPath('errors.nombre.0', 'El nombre debe ser un texto.');
+});
+
 test('no se puede eliminar una categoria con productos asociados', function () {
     $categoria = Categoria::create(['nombre' => 'Bebidas']);
     Producto::create([
@@ -62,9 +68,13 @@ test('crea, filtra y elimina productos por la api', function () {
         'categoria_id' => $categoria->id,
     ])->assertCreated()->json('data');
 
+    // ->load('categoria') sobre el paginador reventaba meta/links (ver ProductoController) -
+    // se dejan estas aserciones para que, si vuelve a pasar, la prueba lo detecte enseguida.
     $this->getJson('/api/productos?q=Ceviche')
         ->assertOk()
-        ->assertJsonPath('data.0.nombre', 'Ceviche');
+        ->assertJsonPath('data.0.nombre', 'Ceviche')
+        ->assertJsonStructure(['meta' => ['current_page', 'last_page', 'total'], 'links'])
+        ->assertJsonPath('meta.total', 1);
 
     $this->putJson("/api/productos/{$creado['id']}", ['precio' => 3500])
         ->assertOk()

@@ -136,6 +136,30 @@ class ComandaService
         return $detalle->refresh();
     }
 
+    /**
+     * Punto único de entrada para PUT/PATCH /comandas/{comanda}. Antes esta decisión (si el
+     * cambio de estado es a "cerrada" o no) vivía en el controlador, que en el caso "no
+     * cerrada" hacía $comanda->update($datos) directo — eso permitía saltarse cualquier regla
+     * de negocio futura sobre mesa_id/estado, y además duplicaba lógica que debería estar
+     * acá. Ahora todo cambio de comanda pasa por el servicio, sin excepción.
+     */
+    public function actualizar(Comanda $comanda, array $datos, User $actor): Comanda
+    {
+        Gate::forUser($actor)->authorize('update', $comanda);
+
+        if (isset($datos['estado_comanda_id'])) {
+            $estado = EstadoComanda::find($datos['estado_comanda_id']);
+
+            if ($estado && $estado->codigo === 'cerrada') {
+                return $this->cerrar($comanda, $actor);
+            }
+        }
+
+        $comanda->update($datos);
+
+        return $comanda->refresh();
+    }
+
     public function cerrar(Comanda $comanda, User $actor): Comanda
     {
         // Cerrar es una forma de "editar" la comanda (cambia su estado), así que usa el mismo

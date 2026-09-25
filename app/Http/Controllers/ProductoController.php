@@ -23,7 +23,15 @@ class ProductoController extends Controller
             $request->only(['categoria', 'solo_disponibles', 'q', 'ordenar_por', 'direccion', 'por_pagina'])
         );
 
-        return ProductoResource::collection($productos->load('categoria'));
+        // OJO: $productos->load('categoria') (sin lo de abajo) rompe la paginación. El
+        // paginador no tiene load() propio, así que Laravel reenvía la llamada a la Collection
+        // interna (AbstractPaginator::__call) y ESA es la que se devuelve — no el paginador.
+        // El resultado: se pierden meta/links en la respuesta JSON. Por eso acá se llama
+        // load() aparte (por su efecto, no por su valor de retorno) y se le pasa el
+        // paginador original, intacto, a ::collection().
+        $productos->getCollection()->load('categoria');
+
+        return ProductoResource::collection($productos);
     }
 
     /**
