@@ -20,7 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Corre antes que cualquier FormRequest, para que un JSON mal formado en el body
+        // responda 400 en vez de terminar fallando la validación normal con 422.
+        $middleware->api(prepend: [
+            \App\Http\Middleware\ValidarJsonMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
