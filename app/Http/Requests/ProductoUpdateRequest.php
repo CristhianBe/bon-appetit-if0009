@@ -53,6 +53,7 @@ class ProductoUpdateRequest extends FormRequest
             'nombre.string' => 'El nombre debe ser un texto.',
             'nombre.max' => 'El nombre no puede superar los 100 caracteres.',
             'nombre.unique' => 'Ya existe un producto con ese nombre en esta categoría.',
+            'descripcion.string' => 'La descripción debe ser un texto.',
             'descripcion.max' => 'La descripción no puede superar los 1000 caracteres.',
             'precio.required' => 'El precio es obligatorio.',
             'precio.numeric' => 'El precio debe ser un número.',

@@ -24,8 +24,10 @@ class DetalleComandaStoreRequest extends FormRequest
     {
         return [
             'producto_id.required' => 'Debe indicar el producto.',
+            'producto_id.integer' => 'El producto indicado no es válido.',
             'producto_id.exists' => 'El producto indicado no existe.',
             'cantidad.required' => 'Debe indicar la cantidad.',
+            'cantidad.integer' => 'La cantidad debe ser un número entero.',
             'cantidad.min' => 'La cantidad debe ser al menos 1.',
         ];
     }

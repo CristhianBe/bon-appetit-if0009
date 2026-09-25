@@ -23,7 +23,9 @@ class CategoriaStoreRequest extends FormRequest
     {
         return [
             'nombre.required' => 'El nombre de la categoría es obligatorio.',
+            'nombre.string' => 'El nombre debe ser un texto.',
             'nombre.max' => 'El nombre no puede superar los 100 caracteres.',
+            'descripcion.string' => 'La descripción debe ser un texto.',
         ];
     }
 }

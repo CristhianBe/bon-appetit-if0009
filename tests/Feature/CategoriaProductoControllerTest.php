@@ -39,6 +39,12 @@ test('rechaza crear una categoria sin nombre', function () {
         ->assertJsonValidationErrors('nombre');
 });
 
+test('responde en espanol cuando el nombre de la categoria no es texto', function () {
+    $this->postJson('/api/categorias', ['nombre' => ['no', 'es', 'texto']])
+        ->assertStatus(422)
+        ->assertJsonPath('errors.nombre.0', 'El nombre debe ser un texto.');
+});
+
 test('no se puede eliminar una categoria con productos asociados', function () {
     $categoria = Categoria::create(['nombre' => 'Bebidas']);
     Producto::create([
