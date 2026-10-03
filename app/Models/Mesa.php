@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Mesa extends Model
 {
+      use HasFactory;
     protected $fillable = ['numero', 'capacidad', 'estado_mesa_id'];
 
 public function estado(): BelongsTo

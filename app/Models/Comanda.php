@@ -32,8 +32,13 @@ public function estado(): BelongsTo
     return $this->belongsTo(EstadoComanda::class, 'estado_comanda_id');
 }
 
+
 public function detalles(): HasMany
 {
     return $this->hasMany(DetalleComanda::class);
+}
+public function estadoComanda(): BelongsTo
+{
+    return $this->belongsTo(EstadoComanda::class);
 }
 }

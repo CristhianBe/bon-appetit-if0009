@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +49,21 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+// Helper compartido por las pruebas del Laboratorio 6: crea un usuario nuevo y le asigna un
+// rol (administrador, mesero o cajero), creando el rol si todavía no existe en esta base de
+// datos de prueba (firstOrCreate evita el error de "unique" si dos pruebas piden el mismo rol).
+function usuarioConRol(string $nombre): User
+{
+    // guard_name explícito (no se deja en el default): Sanctum::actingAs(), cuando ya se
+    // llamó antes en el mismo test, deja config('auth.defaults.guard') en "sanctum" — sin
+    // esto, un rol creado en ese momento terminaría con el guard equivocado (ver
+    // RoleController::store() para el detalle completo del porqué).
+    $rol = Role::firstOrCreate(['name' => $nombre, 'guard_name' => 'web']);
+
+    $usuario = User::factory()->create();
+    $usuario->assignRole($rol);
+
+    return $usuario;
 }

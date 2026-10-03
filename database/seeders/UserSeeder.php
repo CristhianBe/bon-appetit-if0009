@@ -2,38 +2,32 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = Role::where('nombre', 'administrador')->firstOrFail();
-        $mesero = Role::where('nombre', 'mesero')->firstOrFail();
-        $cajero = Role::where('nombre', 'cajero')->firstOrFail();
-
-        User::create([
+        $admin = User::create([
             'name' => 'Admin Demo',
             'email' => 'admin@bonappetit.test',
             'password' => 'Password123!',
-            'rol_id' => $admin->id,
         ]);
+        $admin->assignRole('administrador');
 
-        User::create([
+        $mesero = User::create([
             'name' => 'Mesero Demo',
             'email' => 'mesero@bonappetit.test',
             'password' => 'Password123!',
-            'rol_id' => $mesero->id,
         ]);
+        $mesero->assignRole('mesero');
 
-        User::create([
+        $cajero = User::create([
             'name' => 'Cajero Demo',
             'email' => 'cajero@bonappetit.test',
             'password' => 'Password123!',
-            'rol_id' => $cajero->id,
         ]);
+        $cajero->assignRole('cajero');
     }
 }
