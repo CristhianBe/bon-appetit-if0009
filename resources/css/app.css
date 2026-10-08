@@ -143,4 +143,101 @@ a {
     max-width: 1200px;
     margin: 0 auto;
   }
+
+  /* 
+   Grid: Utilizado para el diseño general de las páginas y la cuadrícula de tarjetas de mesas.
+   Flexbox: Utilizado para la distribución interna de formularios, barras de navegación y tarjetas.
+   */
+
+/* Estilos base */
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--color-bg-main, #FAF8F5);
+    color: var(--color-text-main, #1C1917);
+    margin: 0;
+    padding: 0;
+}
+
+/* Flexbox en Navegación */
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--color-surface, #FFFFFF);
+    border-bottom: 1px solid var(--color-border, #E0E0E0);
+}
+
+.nav-bar ul {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Formulario Accesible */
+.auth-container {
+    max-width: 25rem;
+    margin: 3rem auto;
+    padding: 1.5rem;
+    background-color: var(--color-surface, #FFFFFF);
+    border-radius: 0.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.error-msg {
+    display: none;
+    color: red;
+    font-size: 0.875rem;
+}
+
+/* Grid para la disposición de Mesas */
+.mesas-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.mesa-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    background-color: var(--color-surface, #FFFFFF);
+    border: 1px solid var(--color-border, #E0E0E0);
+    border-radius: 0.5rem;
+}
+
+/* Puntos de quiebre */
+
+/* Tabletas  */
+@media (min-width: 600px) {
+    .mesas-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Pantallas Medianas / Laptops */
+@media (min-width: 900px) {
+    .mesas-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .dashboard-layout {
+        max-width: 75rem;
+        margin: 0 auto;
+    }
+}
+
+/* Pantallas Anchas / Escritorio  */
+@media (min-width: 1200px) {
+    .mesas-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
 }
