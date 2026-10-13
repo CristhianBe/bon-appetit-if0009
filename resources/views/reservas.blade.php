@@ -7,6 +7,9 @@
     <style>
         <?php include resource_path('css/app.css'); ?>
 
+        /* - CSS Grid: Se utiliza para la maquetación principal bidimensional (.dashboard-layout).
+           - Flexbox: Se utiliza para la distribución y alineación interna unidimensional (.form-group, .nav-bar).*/
+
         .form-card {
             background: #ffffff;
             border-radius: 12px;
@@ -81,12 +84,12 @@
 </head>
 <body>
     <header class="main-header">
-        <nav class="nav-bar">
+        <nav class="nav-bar" aria-label="Navegación principal">
             <span class="logo">Bon Appétit</span>
             <ul>
                 <li><a href="/mesas">Mesas</a></li>
                 <li><a href="/pedidos">Pedidos</a></li>
-                <li><a href="/reservas">Reservaciones</a></li>
+                <li><a href="/reservas" aria-current="page">Reservaciones</a></li>
                 <li><a href="/login">Salir</a></li>
             </ul>
         </nav>
@@ -96,23 +99,23 @@
         <h1>Reservar una Mesa</h1>
         
         <div class="form-card">
-            <form action="/mesas" method="GET">
+            <form action="/mesas" method="GET" aria-label="Formulario de reservaciones">
                 <fieldset>
                     <legend>Datos de la Reserva</legend>
                     
                     <div class="form-group">
                         <label for="nombre">Nombre Completo:</label>
-                        <input type="text" id="nombre" name="nombre" required placeholder="Ej: Juan Peréz Lopez">
+                        <input type="text" id="nombre" name="nombre" required aria-required="true" placeholder="Ej: Juan Peréz Lopez">
                     </div>
 
                     <div class="form-group">
                         <label for="email">Correo Electrónico:</label>
-                        <input type="email" id="email" name="email" required placeholder="@gmail.com">
+                        <input type="email" id="email" name="email" required aria-required="true" placeholder="@gmail.com">
                     </div>
 
                     <div class="form-group">
                         <label for="personas">Número de Personas:</label>
-                        <input type="number" id="personas" name="personas" min="1" max="12" required placeholder="3">
+                        <input type="number" id="personas" name="personas" min="1" max="12" required aria-required="true" placeholder="3">
                     </div>
 
                     <button type="submit" class="btn-submit">Confirmar Reserva</button>
