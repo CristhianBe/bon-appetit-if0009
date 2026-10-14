@@ -172,6 +172,7 @@
             <span class="logo">Bon Appétit</span>
             <ul>
                 <li><a href="/mesas" aria-current="page">Mesas</a></li>
+                <li><a href="/menu">Menú</a></li>
                 <li><a href="/pedidos">Pedidos</a></li>
                 <li><a href="/reservas">Reservaciones</a></li>
                 <li><a href="/login">Salir</a></li>
