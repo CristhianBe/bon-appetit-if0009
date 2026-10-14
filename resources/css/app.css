@@ -356,3 +356,31 @@ body {
         grid-template-columns: repeat(4, 1fr);
     }
 }
+/* Estilos para el contenedor de la imagen y adaptación responsiva */
+.card-image-container {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.card-image-container .badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+}
+
+.dish-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.card-dish:hover .dish-img {
+    transform: scale(1.03);
+}
