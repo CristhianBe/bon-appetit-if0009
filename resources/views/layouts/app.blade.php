@@ -17,9 +17,11 @@
     <header class="container" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <h1 style="margin: 0; font-size: var(--text-2xl); color: var(--color-primary);">Bon Appétit</h1>
         <nav aria-label="Navegación principal">
-            <a href="{{ route('home') }}" style="margin-right: var(--space-sm); text-decoration: none; color: var(--color-text); font-weight: 500;">Inicio</a>
-            <a href="{{ route('menu') }}" style="margin-right: var(--space-sm); text-decoration: none; color: var(--color-text); font-weight: 500;">Menú & Catálogo</a>
-            <a href="{{ route('contact') }}" style="text-decoration: none; color: var(--color-text); font-weight: 500;">Contacto</a>
+            <a href="{{ route('menu') }}" style="margin-right: var(--space-sm); text-decoration: none; color: var(--color-text); font-weight: 500;">Menú</a>
+            <a href="{{ route('home') }}" style="margin-right: var(--space-sm); text-decoration: none; color: var(--color-text); font-weight: 500;">Mesas</a>
+            <a href="#" style="margin-right: var(--space-sm); text-decoration: none; color: var(--color-text); font-weight: 500;">Pedidos</a>
+            <a href="#" style="margin-right: var(--space-sm); text-decoration: none; color: var(--color-text); font-weight: 500;">Reservaciones</a>
+            <a href="#" style="text-decoration: none; color: var(--color-text); font-weight: 500;">Salir</a>
         </nav>
     </header>
 
