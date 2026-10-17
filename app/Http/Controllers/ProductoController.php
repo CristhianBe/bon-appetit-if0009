@@ -29,7 +29,11 @@ class ProductoController extends Controller
         // El resultado: se pierden meta/links en la respuesta JSON. Por eso acá se llama
         // load() aparte (por su efecto, no por su valor de retorno) y se le pasa el
         // paginador original, intacto, a ::collection().
-        $productos->getCollection()->load('categoria');
+        if ($productos instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $productos->getCollection()->load('categoria');
+        } elseif ($productos instanceof \Illuminate\Database\Eloquent\Collection) {
+            $productos->load('categoria');
+        }
 
         return ProductoResource::collection($productos);
     }
