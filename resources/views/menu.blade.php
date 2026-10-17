@@ -5,22 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú de Platillos - Bon Appétit</title>
     <style>
-        <?php include resource_path('css/app.css'); ?>
-
-        /* ==========================================================================
-           JUSTIFICACIÓN DE MAQUETACIÓN - PANTALLA 2 (REQUISITO LABORATORIO 8)
-           - CSS Grid: Se utiliza para maquetar la cuadrícula bidimensional de platillos
-             (.catalog-grid), adaptándose automáticamente al ancho de pantalla disponible.
-           - Flexbox: Se utiliza para alinear verticalmente los elementos dentro de
-             cada tarjeta (.card-body) y colocar precio y botón alineados abajo.
-           ========================================================================== */
-
         body {
             background-color: #fdf8f5;
             font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0;
             color: #333;
+        }
+
+        /* Barra de Navegación */
+        .main-header {
+            background-color: #5a1217;
+            color: white;
+            padding: 15px 30px;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .nav-bar ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .nav-bar a[aria-current="page"] {
+            text-decoration: underline;
         }
 
         .menu-container {
@@ -36,14 +59,14 @@
             margin-bottom: 30px;
         }
 
-        /* Cuadrícula del Menú en CSS Grid (3 columnas en escritorio) */
+        /* Cuadrícula del Menú */
         .catalog-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
         }
 
-        /* Tarjeta de Platillo estilizada con Flexbox */
+        /* Tarjeta de Platillo */
         .card {
             background: #ffffff;
             border-radius: 12px;
@@ -122,6 +145,35 @@
             background-color: #8b0000;
             outline: 2px solid #5a1217;
         }
+
+        /* Contenedor de Estados */
+        .state-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            text-align: center;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            margin: 20px 0;
+        }
+
+        .state-message {
+            font-size: 1.2rem;
+            color: #5a1217;
+            font-weight: 500;
+        }
+
+        .main-footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
@@ -141,128 +193,90 @@
     <main class="menu-container">
         <h1>Nuestra Carta</h1>
 
-        <section class="catalog-grid" aria-label="Catálogo de platillos disponibles">
-            <!-- 1. Ensalada Gourmet -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80" alt="Ensalada Gourmet" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Ensalada Gourmet</h2>
-                    <p class="card-desc">Ingredientes frescos de estación acompañados de nuestro aderezo especial de la casa.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡8,500</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Ensalada Gourmet">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 2. Plato Fuerte Especial -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=500&q=80" alt="Plato Fuerte Especial" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Plato Fuerte Especial</h2>
-                    <p class="card-desc">Corte premium de la casa acompañado de vegetales salteados y puré artesanal.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡14,000</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Plato Fuerte Especial">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 3. Fettuccine Alfredo -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=500&q=80" alt="Fettuccine Alfredo" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Fettuccine Alfredo</h2>
-                    <p class="card-desc">Pasta fresca bañada en cremosa salsa alfredo artesanal con queso parmesano madurado.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡10,500</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Fettuccine Alfredo">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 4. Cocteles de Autor -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=500&q=80" alt="Cocteles de Autor" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Cocteles de Autor</h2>
-                    <p class="card-desc">Bebida refrescante elaborada con frutas naturales y licores seleccionados.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡5,500</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Cocteles de Autor">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 5. Burger Bon Appétit -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80" alt="Burger Bon Appétit" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Burger Bon Appétit</h2>
-                    <p class="card-desc">200g de carne angus, queso cheddar fundido, tocineta crujiente y papas rústicas.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡9,800</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Burger Bon Appétit">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 6. Postre Artesanal -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=500&q=80" alt="Postre Artesanal" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Postre Artesanal</h2>
-                    <p class="card-desc">Deliciosa combinación dulce de chocolate y frutos rojos para finalizar tu experiencia.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡4,500</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Postre Artesanal">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 7. Pizza Artesanal -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=500&q=80" alt="Pizza Artesanal" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Pizza Artesanal</h2>
-                    <p class="card-desc">Masa delgada al horno de leña con prosciutto, rúcula fresca y queso mozzarella.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡11,200</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Pizza Artesanal">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 8. Bisque de Mariscos -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=500&q=80" alt="Bisque de Mariscos" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Bisque de Mariscos</h2>
-                    <p class="card-desc">Concentrado de mariscos frescos con un toque de crema de leche y especias finas.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡12,000</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Bisque de Mariscos">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-
-            <!-- 9. Tacos de Pescado -->
-            <article class="card">
-                <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=500&q=80" alt="Tacos de Pescado" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">Tacos de Pescado</h2>
-                    <p class="card-desc">Tres tacos en tortilla de maíz artesanal con pescado empanizado y mayonesa de chipotle.</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡8,900</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar Tacos de Pescado">Ordenar</a>
-                    </div>
-                </div>
-            </article>
-        </section>
+        <!-- Contenedor dinámico -->
+        <div id="app-container"></div>
     </main>
 
     <footer class="main-footer">
         <p>&copy; 2026 Bon Appétit - Todos los derechos reservados.</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('app-container');
+
+            if (container) {
+                // Estado de carga
+                container.innerHTML = `
+                    <div class="state-container">
+                        <p class="state-message">Cargando información del menú, por favor espere...</p>
+                    </div>
+                `;
+                 await new Promise(resolve => setTimeout(resolve, 1200));
+
+                try {
+                   
+                    const items = [
+                        { nombre: 'Ensalada Gourmet', descripcion: 'Ingredientes frescos de estación acompañados de nuestro aderezo especial de la casa', precio: '8,500', imagen: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Plato Fuerte Especial', descripcion: 'Corte premium de la casa acompañado de vegetales salteados y puré artesanal', precio: '14,000', imagen: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Fettuccine Alfredo', descripcion: 'Pasta fresca bañada en cremosa salsa alfredo artesanal con queso parmesano madurado', precio: '10,500', imagen: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Cocteles de Autor', descripcion: 'Bebida refrescante elaborada con frutas naturales y licores seleccionados', precio: '5,500', imagen: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Burger Bon Appétit', descripcion: '200g de carne angus, queso cheddar fundido, tocineta crujiente y papas rústicas', precio: '9,800', imagen: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Postre Artesanal', descripcion: 'Deliciosa combinación dulce de chocolate y frutos rojos para finalizar tu experiencia.', precio: '4,500', imagen: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Pizza Artesanal', descripcion: 'Masa delgada al horno de leña con prosciutto, rúcula fresca y queso mozzarella.', precio: '11,200', imagen: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Bisque de Mariscos', descripcion: 'Concentrado de mariscos frescos con un toque de crema de leche y especias finas.', precio: '12,000', imagen: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=500&q=80' },
+                        { nombre: 'Tacos de Pescado', descripcion: 'Tres tacos en tortilla de maíz artesanal con pescado empanizado y mayonesa de chipotle.', precio: '8,900', imagen: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=500&q=80' }
+                    ];
+
+                    // Estado vació 
+                    if (!items || items.length === 0) {
+                        container.innerHTML = `
+                            <div class="state-container">
+                                <p class="state-message">No se encontraron platillos disponibles en este momento.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Estado con datos 
+                    let html = '<section class="catalog-grid" aria-label="Catálogo de platillos disponibles">';
+                    items.forEach(item => {
+                        html += `
+                            <article class="card">
+                                <img src="${item.imagen}" alt="${item.nombre}" class="card-img">
+                                <div class="card-body">
+                                    <h2 class="card-title">${item.nombre}</h2>
+                                    <p class="card-desc">${item.descripcion}</p>
+                                    <div class="card-footer">
+                                        <span class="card-price">₡${item.precio}</span>
+                                        <a href="/pedidos" class="btn-card" aria-label="Ordenar ${item.nombre}">Ordenar</a>
+                                    </div>
+                                </div>
+                            </article>
+                        `;
+                    });
+                    html += '</section>';
+                    
+                    container.innerHTML = html;
+
+                } catch (error) {
+                    // Estado de error y reintento 
+                    container.innerHTML = `
+                        <div class="state-container">
+                            <p class="state-message" style="color: #a00; margin-bottom: 15px;">Error al conectar con el servidor. No se pudo cargar el menú.</p>
+                            <button id="retry-btn" class="btn-card">Reintentar conexión</button>
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                        const retryBtn = document.getElementById('retry-btn');
+                        if (retryBtn) {
+                            retryBtn.addEventListener('click', () => location.reload());
+                        }
+                    }, 100);
+                }
+            }
+        });
+    </script>
 </body>
 </html>
