@@ -1,3 +1,5 @@
+@import 'menu.css';
+
 :root {
   --color-primary: #6B1D2F;
   --color-primary-hover: #4D1220;
@@ -386,5 +388,3 @@ body {
 }
 
 
-/*No tocar --melvin*/
-@import 'menu.css';
