@@ -29,4 +29,8 @@ Route::get('/pedidos', function () {
 
 Route::get('/reservas', function () {
     return view('reservas');
-})->name('reservas');
+    })->name('reservas');
+
+    Route::get('/api-demo', function () {
+        return view('api-demo');
+    });
