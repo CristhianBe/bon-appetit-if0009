@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     
-    <!-- CSS global -->
-    @vite(['resources/css/app.css'])
+    <!-- CSS y JS global -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <header class="container" style="padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
