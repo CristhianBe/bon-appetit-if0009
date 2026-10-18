@@ -25,8 +25,57 @@
     <main class="menu-container">
         <h1>Nuestra Carta</h1>
         
-        <!-- Contenedor dinámico donde ListadoView renderizará los platillos -->
+        <!-- Botón para agregar -->
+        <div class="header-actions">
+            <button id="btn-crear" class="btn-card btn-crear">➕ Agregar Platillo</button>
+        </div>
+        
         <div id="app-container"></div>
+
+        <!-- El Formulario (Modal Oculto) -->
+        <dialog id="modal-formulario" class="modal-dialog">
+            <h2 id="modal-titulo" class="modal-title">Nuevo Platillo</h2>
+            <form id="form-platillo" class="modal-form">
+                <input type="hidden" id="platillo-id">
+                
+                <div class="form-group">
+                    <label for="platillo-categoria">Categoría:</label>
+                    <select id="platillo-categoria" required class="form-control">
+                        <option value="">Cargando categorías...</option>
+                    </select>
+                    <span id="error-categoria_id" class="error-msg"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="platillo-nombre">Nombre:</label>
+                    <input type="text" id="platillo-nombre" required class="form-control">
+                    <span id="error-nombre" class="error-msg"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="platillo-descripcion">Descripción:</label>
+                    <textarea id="platillo-descripcion" required class="form-control"></textarea>
+                    <span id="error-descripcion" class="error-msg"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="platillo-precio">Precio (₡):</label>
+                    <input type="number" id="platillo-precio" required class="form-control">
+                    <span id="error-precio" class="error-msg"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="platillo-imagen">URL de Imagen:</label>
+                    <input type="url" id="platillo-imagen" class="form-control">
+                    <span id="error-imagen" class="error-msg"></span>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" id="btn-cancelar" class="btn-cancelar">Cancelar</button>
+                    <button type="submit" class="btn-card">Guardar</button>
+                </div>
+            </form>
+        </dialog>
     </main>
 
     <footer class="main-footer">

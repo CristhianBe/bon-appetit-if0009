@@ -117,8 +117,11 @@ export class ListadoView {
                     <p class="card-desc">${item.descripcion || 'Sin descripción'}</p>
                     <div class="card-footer">
                         <span class="card-price">₡${Number(item.precio || 0).toLocaleString()}</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar ${item.nombre}">Ordenar</a>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn-card btn-editar" data-id="${item.id}">Editar</button>
+                        <button class="btn-card btn-eliminar" data-id="${item.id}">Borrar</button>
                     </div>
+</div>
                 </div>
             </article>
         `).join('');
@@ -166,5 +169,25 @@ export class ListadoView {
                 }
             });
         }
+        // EVENTOS DE EDICIÓN Y ELIMINACIÓN
+        this.container.querySelectorAll('.btn-editar').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                // Disparamos un evento personalizado que el FormularioView va a escuchar
+                const event = new CustomEvent('editarPlatillo', { detail: { id: id } });
+                document.dispatchEvent(event);
+            });
+        });
+
+        this.container.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if(confirm('¿Seguro que deseas eliminar este platillo?')) {
+                    const id = e.target.dataset.id;
+                    await this.apiClient.delete(`/productos/${id}`);
+                    // Magia de "El estado dirige la vista": recargamos sin refrescar página
+                    this.render(this.currentPage, this.currentSearch); 
+                }
+            });
+        });
     }
 }

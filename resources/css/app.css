@@ -143,7 +143,7 @@ a {
     max-width: 1200px;
     margin: 0 auto;
   }
-
+}
   /* 
    Grid: Utilizado para el diseño general de las páginas y la cuadrícula de tarjetas de mesas.
    Flexbox: Utilizado para la distribución interna de formularios, barras de navegación y tarjetas.
@@ -239,7 +239,6 @@ body {
     .mesas-grid {
         grid-template-columns: repeat(4, 1fr);
     }
-}
 }
 
 /* Filtros de Categorías (Flexbox) */

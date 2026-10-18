@@ -1,30 +1,56 @@
-// Importamos la clase de tus compañeros usando la ruta relativa
 import { ListadoView } from './views/ListadoView.js';
+import { FormularioView } from './views/FormularioView.js'; // Importamos la nueva clase
 
 document.addEventListener('DOMContentLoaded', async () => {
     const container = document.getElementById('app-container');
 
     if (container) {
-        // Cliente para hacer la petición a las rutas de tu Laravel
+        // Cliente API mejorado para el CRUD completo
         const apiClient = {
             async get(endpoint) {
-                const response = await fetch(`/api${endpoint}`);
-                if (!response.ok) throw new Error('Error al conectar con la base de datos');
-                return await response.json();
+                const res = await fetch(`/api${endpoint}`);
+                if (!res.ok) throw new Error('Error GET');
+                return await res.json();
+            },
+            async post(endpoint, data) {
+                const res = await fetch(`/api${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const responseData = await res.json();
+                // Si falla (ej: 422), arrojamos el estado y los datos de Laravel
+                if (!res.ok) throw { status: res.status, data: responseData };
+                return responseData;
+            },
+            async put(endpoint, data) {
+                const res = await fetch(`/api${endpoint}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const responseData = await res.json();
+                if (!res.ok) throw { status: res.status, data: responseData };
+                return responseData;
+            },
+            async delete(endpoint) {
+                const res = await fetch(`/api${endpoint}`, {
+                    method: 'DELETE',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!res.ok) throw new Error('Error DELETE');
+                return true;
             }
         };
 
         try {
+            // Inicializamos ambas vistas y las conectamos
             const listadoView = new ListadoView(apiClient, container);
-            // Ejecuta el render (los parámetros dependen de cómo lo programó tu equipo)
+            const formularioView = new FormularioView(apiClient, listadoView);
+            
             await listadoView.render(1, '');
         } catch (error) {
-            console.error("Error en la petición API:", error);
-            container.innerHTML = `
-                <div class="state-container" style="text-align: center; padding: 50px;">
-                    <p style="color: #a00; font-size: 1.2rem;">Error al cargar los platillos desde el servidor.</p>
-                </div>
-            `;
+            console.error(error);
         }
     }
 });

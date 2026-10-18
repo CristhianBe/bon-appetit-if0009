@@ -21,6 +21,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 // 👇 CAMBIO 1: Agregamos esta línea para permitir que cualquiera vea el menú
 Route::apiResource('productos', ProductoController::class)->only(['index', 'show']);
 
+
 // A partir de acá, todas las rutas requieren "Authorization: Bearer <token>" válido.
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -31,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/password', [AuthController::class, 'cambiarPassword']);
 
     Route::apiResource('categorias', CategoriaController::class)
-        ->parameters(['categorias' => 'category']);
+       ->parameters(['categorias' => 'category']);
 
     Route::apiResource('comandas', ComandaController::class);
 
@@ -48,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->parameters(['metodos-pago' => 'metodoPago']);
 
     // 👇 CAMBIO 2: Le agregamos ->except() a la ruta que ya tenías
-    Route::apiResource('productos', ProductoController::class)->except(['index', 'show']);
+  //  Route::apiResource('productos', ProductoController::class)->except(['index', 'show']);
 
     Route::apiResource('roles', RoleController::class);
 
