@@ -31,7 +31,7 @@ export class ListadoView {
 
         try {
 
-            const endpoint = `/platillos?page=${this.currentPage}&search=${encodeURIComponent(this.currentSearch)}`;
+           const endpoint = `/productos?page=${this.currentPage}&search=${encodeURIComponent(this.currentSearch)}`;
             const response = await this.apiClient.get(endpoint);
 
             const data = response.data || response.items || [];
