@@ -22,8 +22,10 @@ export class ListadoView {
      * Método principal para cargar y renderizar los datos
      * @param {number} page - Número de página a consultar
      * @param {string} search - Criterio de búsqueda
+     * @param {AbortSignal} [signal] - Permite cancelar la solicitud (usado por busqueda.js
+     *   para abortar la petición anterior cuando el usuario escribe un nuevo criterio).
      */
-    async render(page = 1, search = '') {
+    async render(page = 1, search = '', signal = null) {
         this.currentPage = page;
         this.currentSearch = search;
 
@@ -31,8 +33,10 @@ export class ListadoView {
 
         try {
 
-           const endpoint = `/productos?page=${this.currentPage}&search=${encodeURIComponent(this.currentSearch)}`;
-            const response = await this.apiClient.get(endpoint);
+           // El backend (ProductoService::listar) filtra por nombre con el parámetro "q",
+           // no "search" — ver app/Http/Controllers/ProductoController.php.
+           const endpoint = `/productos?page=${this.currentPage}&q=${encodeURIComponent(this.currentSearch)}`;
+            const response = await this.apiClient.get(endpoint, signal ? { signal } : {});
 
             const data = response.data || response.items || [];
             this.totalPages = response.last_page || response.totalPages || 1;
@@ -49,6 +53,10 @@ export class ListadoView {
        this.showDataState(data, response);
 
         } catch (error) {
+
+            // Una solicitud cancelada (porque el usuario ya escribió un criterio nuevo) no es
+            // un error real: la respuesta buena la trae la petición que la reemplazó.
+            if (error.name === 'AbortError') return;
 
             console.error('Error al cargar la lista:', error);
             this.showErrorState(error.message || 'No se pudo conectar con el servidor.');

@@ -160,6 +160,37 @@ body {
     font-weight: 500;
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.search-container {
+    max-width: 400px;
+    margin: 0 auto 25px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 10px 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.search-container input:focus {
+    outline: none;
+    border-color: #5a1217;
+}
+
 .main-footer {
     text-align: center;
     padding: 20px;

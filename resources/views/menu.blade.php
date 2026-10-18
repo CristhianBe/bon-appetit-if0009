@@ -24,7 +24,17 @@
 
     <main class="menu-container">
         <h1>Nuestra Carta</h1>
-        
+
+        <div class="search-container">
+            <label for="buscar-platillo" class="sr-only">Buscar platillo</label>
+            <input
+                type="search"
+                id="buscar-platillo"
+                placeholder="Buscar platillo por nombre..."
+                aria-label="Buscar platillo"
+            >
+        </div>
+
         <!-- Contenedor dinámico donde ListadoView renderizará los platillos -->
         <div id="app-container"></div>
     </main>
