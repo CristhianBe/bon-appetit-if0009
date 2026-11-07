@@ -1,0 +1,41 @@
+:root {
+  --ion-color-primary: #b5442c;
+  --ion-color-primary-rgb: 181, 68, 44;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #9f3c27;
+  --ion-color-primary-tint: #bc5741;
+}
+
+/*
+ * Áreas seguras: ion-header/ion-toolbar ya suman --ion-safe-area-top (notch). Para el
+ * contenido se suman los insets laterales (landscape con notch) e inferior (barra de
+ * gestos) al padding normal. Ionic llena --ion-safe-area-* con env(safe-area-inset-*).
+ */
+.contenido-seguro {
+  --padding-start: calc(16px + var(--ion-safe-area-left, 0px));
+  --padding-end: calc(16px + var(--ion-safe-area-right, 0px));
+  --padding-top: 16px;
+  --padding-bottom: calc(16px + var(--ion-safe-area-bottom, 0px));
+}
+
+/* Contenedor centrado para que en pantallas grandes / tablets no se estire todo. */
+.contenedor {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.estado-centrado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  min-height: 50vh;
+  padding: 24px;
+}
+
+.estado-centrado ion-icon {
+  font-size: 64px;
+}
