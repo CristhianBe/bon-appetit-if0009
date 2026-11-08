@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bon Appetit</string>
+    <string name="title_activity_main">Bon Appetit</string>
+    <string name="package_name">cr.ac.ucr.bonappetit</string>
+    <string name="custom_url_scheme">cr.ac.ucr.bonappetit</string>
+</resources>
