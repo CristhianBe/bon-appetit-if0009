@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+         <ion-menu-button></ion-menu-button>
+        </ion-buttons>
         <ion-title>Menú</ion-title>
         <ion-buttons slot="end">
           <ion-button aria-label="Cerrar sesión" @click="confirmarLogout">
@@ -109,6 +112,7 @@ import {
   IonBadge,
   IonButton,
   IonButtons,
+  IonMenuButton,
   IonCard,
   IonCol,
   IonContent,

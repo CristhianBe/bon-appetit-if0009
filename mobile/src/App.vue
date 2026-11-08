@@ -1,5 +1,35 @@
 <template>
   <ion-app>
+
+    <!-- El Menú Lateral -->
+    <ion-menu content-id="main-content" type="overlay">
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Bon Appétit</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list>
+          <ion-menu-toggle auto-hide="false">
+            <ion-item button router-link="/administracion">
+              <ion-label>Administración</ion-label>
+            </ion-item>
+            <ion-item button router-link="/ProductosPage">
+              <ion-label>Menu</ion-label>
+            </ion-item>
+            <ion-item button router-link="/mesas">
+              <ion-label>Mesas</ion-label>
+            </ion-item>
+            <ion-item button router-link="/comandas">
+              <ion-label>Comandas</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </ion-list>
+      </ion-content>
+    </ion-menu>
+
+    <ion-router-outlet id="main-content"></ion-router-outlet>
+
     <ion-router-outlet />
   </ion-app>
 </template>
@@ -7,7 +37,9 @@
 <script setup lang="ts">
 import { App as CapacitorApp } from '@capacitor/app';
 import type { PluginListenerHandle } from '@capacitor/core';
-import { IonApp, IonRouterOutlet } from '@ionic/vue';
+import { IonApp, IonRouterOutlet,IonMenuButton,IonButton,IonIcon,IonTitle,IonToolbar,
+  IonHeader,IonButtons, IonContent, IonPage, IonMenu, IonList, IonItem, IonLabel
+} from '@ionic/vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
