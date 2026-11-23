@@ -47,4 +47,7 @@ fi
 php artisan config:cache --no-interaction
 
 echo "[entrypoint] Iniciando servidor en el puerto $PORT"
-exec php -S "0.0.0.0:$PORT" -t public vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
+# El router de Laravel (server.php) asume que el directorio actual es public/,
+# igual que hace "php artisan serve"; por eso se arranca desde ahí.
+cd /var/www/html/public
+exec php -S "0.0.0.0:$PORT" ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php

@@ -20,7 +20,9 @@ RUN npm run build
 ############################################
 FROM php:8.4-cli-alpine AS php-base
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions pdo_mysql intl bcmath opcache
+RUN install-php-extensions pdo_mysql intl bcmath opcache \
+ && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+# php.ini de producción: display_errors=Off, así ningún error muestra rutas ni trazas al visitante.
 
 ############################################
 # Etapa 2: dependencias de PHP SIN paquetes de desarrollo
