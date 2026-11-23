@@ -1,13 +1,27 @@
 /**
- * Módulo encargado del renderizado y gestión del listado paginado
- * de la aplicación, implementando los 4 estados de la interfaz
+ * Módulo encargado del renderizado del catálogo de platillos,
+ * implementando los 4 estados de la interfaz: cargando, vacío, error y datos.
+ *
+ * Los filtros (búsqueda, categoría y "solo disponibles") se aplican en el navegador
+ * sobre la página cargada. Todo texto que viene de la API se escapa antes de
+ * insertarlo en el HTML, para que un nombre o descripción con etiquetas no se ejecute.
  */
+
+const ICONO_CUBIERTOS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2v20M4 2v6a3 3 0 0 0 6 0V2"/><path d="M17 22V2c-2.2 1.2-3.5 3.6-3.5 7v4H17"/></svg>';
+const ICONO_MAS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+
+const escapar = (valor) => String(valor ?? '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
+
+// Mismo formato que el servidor (DatosDemo::colones): ₡38.500
+export const colones = (monto) => `₡${Math.round(Number(monto || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 
 export class ListadoView {
     /**
-     * @param {Object} apiClient - Instancia del cliente HTTP/API
-     * @param {HTMLElement} containerElement - Contenedor HTML donde se renderiza la vista
-     * @param {Object} store - Módulo de estado global de la aplicación
+     * @param {Object} apiClient - Cliente HTTP con un método get(endpoint)
+     * @param {HTMLElement} containerElement - Contenedor donde se pinta la vista
+     * @param {Object} store - Estado global opcional (setState)
      */
     constructor(apiClient, containerElement, store = null) {
         this.apiClient = apiClient;
@@ -15,156 +29,123 @@ export class ListadoView {
         this.store = store;
         this.currentPage = 1;
         this.totalPages = 1;
-        this.currentSearch = '';
+        this.items = [];
+        this.filtros = { texto: '', categoria: '', soloDisponibles: false };
+        this.onCategorias = null; // callback para que la página pinte los chips de categoría
     }
 
-    /**
-     * Método principal para cargar y renderizar los datos
-     * @param {number} page - Número de página a consultar
-     * @param {string} search - Criterio de búsqueda
-     */
-    async render(page = 1, search = '') {
+    async render(page = 1) {
         this.currentPage = page;
-        this.currentSearch = search;
-
         this.showLoadingState();
 
         try {
+            const response = await this.apiClient.get(`/productos?page=${this.currentPage}&por_pagina=48`);
+            this.items = response.data || response.items || [];
+            this.totalPages = response.meta?.last_page || response.last_page || 1;
 
-           const endpoint = `/productos?page=${this.currentPage}&search=${encodeURIComponent(this.currentSearch)}`;
-            const response = await this.apiClient.get(endpoint);
+            this.store?.setState?.({ items: this.items, page: this.currentPage });
+            this.onCategorias?.(this.categorias());
 
-            const data = response.data || response.items || [];
-            this.totalPages = response.last_page || response.totalPages || 1;
-
-            if (this.store && typeof this.store.setState === 'function') {
-                this.store.setState({ items: data, page: this.currentPage });
-            }
-
-            if (data.length === 0) {
-                this.showEmptyState();
+            if (this.items.length === 0) {
+                this.showEmptyState('Todavía no hay platillos registrados en el menú.');
                 return;
             }
-
-       this.showDataState(data, response);
-
+            this.showDataState();
         } catch (error) {
-
             console.error('Error al cargar la lista:', error);
             this.showErrorState(error.message || 'No se pudo conectar con el servidor.');
         }
     }
 
-    /**
-     * Renderiza el estado de carga
-     */
+    categorias() {
+        const nombres = this.items.map((p) => p.categoria?.nombre).filter(Boolean);
+        return [...new Set(nombres)];
+    }
+
+    filtrar(cambios) {
+        Object.assign(this.filtros, cambios);
+        if (this.items.length) this.showDataState();
+    }
+
+    itemsVisibles() {
+        const { texto, categoria, soloDisponibles } = this.filtros;
+        const t = texto.trim().toLowerCase();
+        return this.items.filter((p) => (!t || `${p.nombre} ${p.descripcion ?? ''}`.toLowerCase().includes(t))
+            && (!categoria || p.categoria?.nombre === categoria)
+            && (!soloDisponibles || p.disponible));
+    }
+
     showLoadingState() {
         this.container.innerHTML = `
-            <div class="state-container state-loading" aria-live="polite">
+            <div class="state-container" role="status">
                 <div class="spinner"></div>
-                <p>Cargando información del menú, por favor espere...</p>
-            </div>
-        `;
+                <p>Cargando el menú…</p>
+            </div>`;
     }
 
-    /**
-     * Renderiza el estado vacío
-     */
-    showEmptyState() {
+    showEmptyState(mensaje) {
         this.container.innerHTML = `
-            <div class="state-container state-empty">
-                <div class="empty-icon">🍽️</div>
-                <h3>No se encontraron resultados</h3>
-                <p>No hay platillos o registros disponibles para mostrar${this.currentSearch ? ` con el término "${this.currentSearch}"` : ''}.</p>
-            </div>
-        `;
+            <div class="state-container">
+                <p><strong>No hay resultados</strong></p>
+                <p>${escapar(mensaje)}</p>
+            </div>`;
     }
 
-    /**
-     * Renderiza el estado de error y vincula el botón de reintento
-     * @param {string} errorMessage 
-     */
     showErrorState(errorMessage) {
         this.container.innerHTML = `
-            <div class="state-container state-error" role="alert">
-                <div class="error-icon">⚠️</div>
-                <h3>Error de conexión</h3>
-                <p>${errorMessage}</p>
-                <button id="btn-retry" class="btn-card">Reintentar conexión</button>
-            </div>
-        `;
-
-
-        const retryBtn = this.container.querySelector('#btn-retry');
-        if (retryBtn) {
-            retryBtn.addEventListener('click', () => {
-                this.render(this.currentPage, this.currentSearch);
-            });
-        }
+            <div class="state-container" role="alert">
+                <p><strong>No se pudo cargar el menú</strong></p>
+                <p>${escapar(errorMessage)}</p>
+                <button type="button" class="btn btn--outline" data-reintentar style="margin-top:12px;">Reintentar</button>
+            </div>`;
+        this.container.querySelector('[data-reintentar]')
+            .addEventListener('click', () => this.render(this.currentPage));
     }
 
-    /**
-     * Renderiza la lista con datos y sus controles de paginación
-     * @param {Array} items - Lista de elementos devueltos por la API
-     * @param {Object} paginationMeta - Metadata de paginación del backend
-     */
-    showDataState(items, paginationMeta) {
-        const cardsHtml = items.map(item => `
-            <article class="card">
-                <img src="${item.imagen || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80'}" alt="${item.nombre}" class="card-img">
-                <div class="card-body">
-                    <h2 class="card-title">${item.nombre}</h2>
-                    <p class="card-desc">${item.descripcion || 'Sin descripción'}</p>
-                    <div class="card-footer">
-                        <span class="card-price">₡${Number(item.precio || 0).toLocaleString()}</span>
-                        <a href="/pedidos" class="btn-card" aria-label="Ordenar ${item.nombre}">Ordenar</a>
+    showDataState() {
+        const visibles = this.itemsVisibles();
+        if (visibles.length === 0) {
+            this.showEmptyState('Ningún platillo coincide con los filtros seleccionados.');
+            return;
+        }
+
+        const tarjetas = visibles.map((p) => {
+            const disponible = Boolean(p.disponible);
+            const imagen = p.imagen_url
+                ? `<img src="${escapar(p.imagen_url)}" alt="" loading="lazy">`
+                : ICONO_CUBIERTOS;
+            return `
+                <article class="dish ${disponible ? '' : 'dish--agotado'}">
+                    <div class="dish-media">
+                        ${imagen}
+                        <span class="badge ${disponible ? 'badge--success' : 'badge--neutral'}">${disponible ? 'Disponible' : 'Agotado'}</span>
                     </div>
-                </div>
-            </article>
-        `).join('');
+                    <div class="dish-body">
+                        ${p.categoria?.nombre ? `<span class="dish-cat">${escapar(p.categoria.nombre)}</span>` : ''}
+                        <h2 class="dish-name">${escapar(p.nombre)}</h2>
+                        ${p.descripcion ? `<p class="dish-desc">${escapar(p.descripcion)}</p>` : ''}
+                        <div class="dish-foot">
+                            <span class="dish-price">${colones(p.precio)}</span>
+                            <button type="button" class="btn ${disponible ? 'btn--primary' : ''}" data-agregar="${escapar(p.id)}"
+                                ${disponible ? '' : 'disabled'} aria-label="Añadir ${escapar(p.nombre)}">
+                                ${ICONO_MAS} Añadir
+                            </button>
+                        </div>
+                    </div>
+                </article>`;
+        }).join('');
 
-        this.container.innerHTML = `
-            <div class="state-container state-data">
-                <section class="catalog-grid" aria-label="Catálogo de platillos">
-                    ${cardsHtml}
-                </section>
+        const paginacion = this.totalPages > 1 ? `
+            <nav class="pagination" aria-label="Páginas del menú">
+                <button type="button" class="btn btn--ghost" data-pagina="${this.currentPage - 1}" ${this.currentPage <= 1 ? 'disabled' : ''}>Anterior</button>
+                <span>Página <strong>${this.currentPage}</strong> de <strong>${this.totalPages}</strong></span>
+                <button type="button" class="btn btn--ghost" data-pagina="${this.currentPage + 1}" ${this.currentPage >= this.totalPages ? 'disabled' : ''}>Siguiente</button>
+            </nav>` : '';
 
-                <nav class="pagination-container" aria-label="Navegación de páginas">
-                    <button id="btn-prev" class="btn-pagination" ${this.currentPage <= 1 ? 'disabled' : ''}>
-                        &laquo; Anterior
-                    </button>
-                    <span class="page-indicator">Página <strong>${this.currentPage}</strong> de <strong>${this.totalPages}</strong></span>
-                    <button id="btn-next" class="btn-pagination" ${this.currentPage >= this.totalPages ? 'disabled' : ''}>
-                        Siguiente &raquo;
-                    </button>
-                </nav>
-            </div>
-        `;
+        this.container.innerHTML = `<section class="catalog-grid" aria-label="Catálogo de platillos">${tarjetas}</section>${paginacion}`;
 
-        this.bindPaginationEvents();
-    }
-
-    /**
-     * Asigna los escuchadores de eventos para Anterior y Siguiente
-     */
-    bindPaginationEvents() {
-        const prevBtn = this.container.querySelector('#btn-prev');
-        const nextBtn = this.container.querySelector('#btn-next');
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                if (this.currentPage > 1) {
-                    this.render(this.currentPage - 1, this.currentSearch);
-                }
-            });
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                if (this.currentPage < this.totalPages) {
-                    this.render(this.currentPage + 1, this.currentSearch);
-                }
-            });
-        }
+        this.container.querySelectorAll('[data-pagina]').forEach((b) => {
+            b.addEventListener('click', () => this.render(Number(b.dataset.pagina)));
+        });
     }
 }

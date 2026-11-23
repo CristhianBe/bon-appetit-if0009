@@ -1,204 +1,146 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Pedidos - Bon Appétit</title>
-    <style>
-        <?php include resource_path('css/app.css'); ?>
+@use('App\Support\DatosDemo')
+@extends('layouts.panel')
 
-        dialog.modal-detalle {
-            border: none;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-            font-family: inherit;
-        }
+@section('title', 'Comandas activas')
+@section('heading', 'Comandas activas')
+@section('page', 'comandas')
 
-        dialog::backdrop {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
+@php
+    $lista = collect($comandas);
+    $atrasadas = $lista->where('retraso', true);
+    $cuenta = fn ($estado) => $lista->where('estado', $estado)->count();
+    $tabs = [
+        ['valor' => '', 'texto' => 'Todas', 'n' => $lista->count()],
+        ['valor' => 'abierta', 'texto' => 'Abiertas', 'n' => $cuenta('abierta')],
+        ['valor' => 'en_preparacion', 'texto' => 'En preparación', 'n' => $cuenta('en_preparacion')],
+        ['valor' => 'servida', 'texto' => 'Servidas', 'n' => $cuenta('servida')],
+    ];
+@endphp
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-        }
+@section('content')
+    <section class="kpis" aria-label="Resumen de comandas">
+        <article class="panel-card kpi">
+            <div class="kpi-head">Comandas activas <span class="kpi-icon"><x-icon name="comandas" /></span></div>
+            <p class="kpi-value">{{ $lista->count() }}</p>
+        </article>
+        <article class="panel-card kpi">
+            <div class="kpi-head">Facturación en curso <span class="kpi-icon"><x-icon name="dinero" /></span></div>
+            <p class="kpi-value kpi-value--money">{{ DatosDemo::colones($lista->sum('total')) }}</p>
+        </article>
+        <article class="panel-card kpi">
+            <div class="kpi-head">En preparación <span class="kpi-icon"><x-icon name="cocina" /></span></div>
+            <p class="kpi-value kpi-value--warning">{{ $cuenta('en_preparacion') }}</p>
+        </article>
+        <article class="panel-card kpi">
+            <div class="kpi-head">Tiempo promedio en mesa <span class="kpi-icon"><x-icon name="reloj" /></span></div>
+            <p class="kpi-value">{{ round($lista->avg('minutos')) }} min</p>
+        </article>
+    </section>
 
-        .modal-header h2 {
-            margin: 0;
-            color: #5a1217;
-            font-size: 1.4rem;
-        }
-
-        .tabla-pedido {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-
-        .tabla-pedido th, 
-        .tabla-pedido td {
-            text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tabla-pedido th {
-            background-color: #fdf8f5;
-            color: #5a1217;
-        }
-
-        .resumen-total {
-            text-align: right;
-            font-size: 1.1rem;
-            margin-top: 15px;
-            color: #333;
-        }
-
-        .btn-cerrar {
-            background: #8b0000;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            float: right;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-
-        .btn-cerrar:hover {
-            background: #a00000;
-        }
-    </style>
-</head>
-<body>
-    <header class="main-header">
-        <nav class="nav-bar">
-            <span class="logo">Bon Appétit</span>
-            <ul>
-                <li><a href="/mesas">Mesas</a></li>
-                <li><a href="/menu">Menú</a></li>
-                <li><a href="/pedidos">Pedidos</a></li>
-                <li><a href="/reservas">Reservaciones</a></li>
-                <li><a href="/login">Salir</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main class="dashboard-layout">
-        <h1>Gestión de Pedidos</h1>
-        
-        <div class="mesas-grid">
-            <!-- Pedido #101 -->
-            <article class="mesa-card">
-                <h2>Pedido #101 </h2>
-                <p><strong>Estado del Pedido:</strong> En proceso </p>
-                <button type="button" class="btn-secondary" onclick="document.getElementById('modal-pedido101').showModal()">Ver Detalle</button>
-            </article>
-
-            <!-- Pedido #102 -->
-            <article class="mesa-card">
-                <h2>Pedido #102 </h2>
-                <p><strong>Estado:</strong> Entregado</p>
-                <button type="button" class="btn-secondary" onclick="document.getElementById('modal-pedido102').showModal()">Ver Detalle</button>
-            </article>
+    @if ($atrasadas->isNotEmpty())
+        <div class="alert" role="alert">
+            <x-icon name="alerta" />
+            <span>
+                {{ $atrasadas->count() }} {{ $atrasadas->count() === 1 ? 'comanda supera' : 'comandas superan' }}
+                los {{ DatosDemo::MINUTOS_RETRASO }} min:
+                {{ $atrasadas->map(fn ($c) => 'Mesa '.$c['mesa'].' ('.$c['minutos'].' min)')->join(', ', ' y ') }}.
+            </span>
         </div>
+    @endif
 
+    <div class="toolbar" data-filtros="comandas">
+        <div role="group" aria-label="Filtrar por estado" style="display:flex; gap:8px;">
+            @foreach ($tabs as $i => $t)
+                <button type="button" class="chip" data-filtro="estado" data-valor="{{ $t['valor'] }}" aria-pressed="{{ $i === 0 ? 'true' : 'false' }}">
+                    {{ $t['texto'] }} <span class="count">({{ $t['n'] }})</span>
+                </button>
+            @endforeach
+        </div>
+        <span class="toolbar-spacer"></span>
+        <div class="search">
+            <x-icon name="buscar" />
+            <label class="sr-only" for="buscar-comanda">Buscar comanda o mesa</label>
+            <input id="buscar-comanda" type="search" placeholder="# comanda o mesa" data-filtro-buscar>
+        </div>
+    </div>
 
-        <dialog id="modal-pedido101" class="modal-detalle">
-            <div class="modal-header">
-                <h2>Detalle Orden #101</h2>
+    <div class="comandas-layout">
+        <section aria-label="Lista de comandas">
+            <div class="comanda-list" data-lista="comandas">
+                @foreach ($comandas as $i => $c)
+                    @php $estado = $c['retraso'] ? ['texto' => 'Retraso', 'tono' => 'danger'] : DatosDemo::estadoComanda($c['estado']); @endphp
+                    <button type="button" @class(['comanda-card', 'comanda-card--retraso' => $c['retraso']])
+                            data-item data-comanda="{{ $c['codigo'] }}" data-estado="{{ $c['estado'] }}"
+                            data-texto="{{ mb_strtolower($c['codigo'].' mesa '.$c['mesa'].' '.$c['mesero']) }}"
+                            aria-controls="detalle-{{ $c['codigo'] }}" aria-current="{{ $i === 0 ? 'true' : 'false' }}">
+                        <span class="comanda-card-head">
+                            <span class="comanda-card-title">Mesa {{ $c['mesa'] }}</span>
+                            <span class="badge badge--{{ $estado['tono'] }}">{{ $estado['texto'] }}</span>
+                        </span>
+                        <span class="comanda-card-sub" style="display:block;">#{{ $c['codigo'] }} · {{ $c['mesero'] }} · {{ $c['cantidad_items'] }} productos</span>
+                        <span class="comanda-card-foot">
+                            <span class="mesa-time"><x-icon name="reloj" /> {{ $c['minutos'] }} min</span>
+                            <span class="comanda-card-total">{{ DatosDemo::colones($c['total']) }}</span>
+                        </span>
+                    </button>
+                @endforeach
             </div>
-            <div class="modal-body">
-                <p><strong>Estado del Pedido:</strong> En preparación
-             </p>
-                
-                <table class="tabla-pedido">
-                    <thead>
-                        <tr>
-                            <th>Cant.</th>
-                            <th>Producto</th>
-                            <th>Precio Unit.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Hamburguesa de Pollo</td>
-                            <td>₡5,500</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>Papas Fritas Pequeñas</td>
-                            <td>₡1,800</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Coca Cola 600ml</td>
-                            <td>₡2,400</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <p class="empty-state" data-vacio hidden>No hay comandas con ese filtro.</p>
+        </section>
 
-                <div class="resumen-total">
-                    <strong>Total Acomulado: ₡9,700</strong>
-                </div>
-            </div>
-            <button class="btn-cerrar" onclick="document.getElementById('modal-pedido101').close()">Cerrar</button>
-        </dialog>
+        <div data-detalles>
+            @foreach ($comandas as $i => $c)
+                @php $estado = DatosDemo::estadoComanda($c['estado']); @endphp
+                <article class="panel-card detalle" id="detalle-{{ $c['codigo'] }}" data-detalle="{{ $c['codigo'] }}" @if ($i !== 0) hidden @endif
+                         aria-labelledby="detalle-{{ $c['codigo'] }}-titulo" tabindex="-1">
+                    <header class="detalle-head">
+                        <div>
+                            <h2 id="detalle-{{ $c['codigo'] }}-titulo">Mesa {{ $c['mesa'] }}</h2>
+                            <p class="muted">Comanda #{{ $c['codigo'] }} · {{ $c['mesero'] }} · {{ $c['personas'] }} pax · {{ $c['minutos'] }} min</p>
+                        </div>
+                        <span class="badge badge--{{ $estado['tono'] }}">{{ $estado['texto'] }}</span>
+                    </header>
 
-        <!-- MODAL DETALLE PEDIDO #102 -->
-        <dialog id="modal-pedido102" class="modal-detalle">
-            <div class="modal-header">
-                <h2>Detalle Orden #102</h2>
-            </div>
-            <div class="modal-body">
-                <p><strong>Estado del Pedido:</strong> Entregado </p>
-                
-                <table class="tabla-pedido">
-                    <thead>
-                        <tr>
-                            <th>Cant.</th>
-                            <th>Producto</th>
-                            <th>Precio Unit.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>2</td>
-                            <td>Pasta Alfredo con Pollo</td>
-                            <td>₡13,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>Ensalada César</td>
-                            <td>₡4,200</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Jugo Natural de Fresa</td>
-                            <td>₡3,000</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <ul class="items">
+                        @foreach ($c['items'] as $item)
+                            <li class="item">
+                                <span class="item-qty">{{ $item['cant'] }}×</span>
+                                <span>
+                                    <span class="item-name">{{ $item['nombre'] }}</span><br>
+                                    <span class="muted" style="font-size:12px;">{{ DatosDemo::colones($item['precio']) }} c/u</span>
+                                    @isset($item['nota'])
+                                        <br><span class="item-note">{{ $item['nota'] }}</span>
+                                    @endisset
+                                </span>
+                                <span class="item-price">{{ DatosDemo::colones($item['cant'] * $item['precio']) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
 
-                <div class="resumen-total">
-                    <strong>Total Cobrado: ₡20,200</strong>
-                </div>
-            </div>
-            <button class="btn-cerrar" onclick="document.getElementById('modal-pedido102').close()">Cerrar</button>
-        </dialog>
-    </main>
+                    @isset($c['alergia'])
+                        <div class="alert alert--warning" style="margin:14px 0 0;">
+                            <x-icon name="alerta" /> <span><strong>Alergia:</strong> {{ $c['alergia'] }}</span>
+                        </div>
+                    @endisset
 
-    <footer class="main-footer">
-        <p>&copy; 2026 Bon Appétit - Todos los derechos reservados.</p>
-    </footer>
-</body>
-</html>
+                    <div class="totales">
+                        <div><span>Subtotal</span><span>{{ DatosDemo::colones($c['subtotal']) }}</span></div>
+                        <div><span>IVA (13 %)</span><span>{{ DatosDemo::colones($c['iva']) }}</span></div>
+                        <div><span>Servicio (10 %)</span><span>{{ DatosDemo::colones($c['servicio']) }}</span></div>
+                        <div class="total"><span>Total</span><strong>{{ DatosDemo::colones($c['total']) }}</strong></div>
+                    </div>
+
+                    <div class="detalle-actions">
+                        <a class="btn btn--outline" href="{{ route('menu') }}">Agregar productos</a>
+                        @if ($c['estado'] === 'servida')
+                            <button type="button" class="btn btn--outline" disabled>Ya servida</button>
+                        @else
+                            <button type="button" class="btn btn--outline" data-demo="Comanda #{{ $c['codigo'] }} enviada a cocina (demostración)">Enviar a cocina</button>
+                        @endif
+                        <button type="button" class="btn btn--primary" data-demo="Cobro de {{ DatosDemo::colones($c['total']) }} registrado para la mesa {{ $c['mesa'] }} (demostración)">Cobrar y cerrar</button>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    </div>
+@endsection

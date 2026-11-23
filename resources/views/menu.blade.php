@@ -1,36 +1,32 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú de Platillos - Bon Appétit</title>
-    
-    <!-- Cargando CSS y JS desde la carpeta resources usando Vite -->
-    @vite(['resources/css/app.css', 'resources/js/menu.js'])
-</head>
-<body>
-    <header class="main-header">
-        <nav class="nav-bar" aria-label="Navegación principal">
-            <span class="logo">Bon Appétit</span>
-            <ul>
-                <li><a href="/mesas">Mesas</a></li>
-                <li><a href="/menu" aria-current="page">Menú</a></li>
-                <li><a href="/pedidos">Pedidos</a></li>
-                <li><a href="/reservas">Reservaciones</a></li>
-                <li><a href="/login">Salir</a></li>
-            </ul>
-        </nav>
-    </header>
+@extends('layouts.panel')
 
-    <main class="menu-container">
-        <h1>Nuestra Carta</h1>
-        
-        <!-- Contenedor dinámico donde ListadoView renderizará los platillos -->
-        <div id="app-container"></div>
-    </main>
+@section('title', 'Menú y catálogo')
+@section('heading', 'Menú y catálogo')
+@section('page', 'menu')
 
-    <footer class="main-footer">
-        <p>&copy; 2026 Bon Appétit - Todos los derechos reservados.</p>
-    </footer>
-</body>
-</html>
+@push('scripts')
+    @vite('resources/js/menu.js')
+@endpush
+
+@section('content')
+    <p class="page-intro">Platillos cargados en vivo desde la API (<code>GET /api/productos</code>).</p>
+
+    <div class="toolbar">
+        <div class="search">
+            <x-icon name="buscar" />
+            <label class="sr-only" for="buscar-platillo">Buscar platillo</label>
+            <input id="buscar-platillo" type="search" placeholder="Buscar platillo, bebida, postre…" data-menu-buscar>
+        </div>
+        <div role="group" aria-label="Filtrar por categoría" data-menu-categorias style="display:flex; gap:8px;"></div>
+        <span class="toolbar-spacer"></span>
+        <label class="switch"><input type="checkbox" data-menu-disponibles> Solo disponibles</label>
+    </div>
+
+    {{-- ListadoView pinta aquí los estados de carga, vacío, error y datos. --}}
+    <div id="app-container" aria-live="polite"></div>
+
+    <div class="ticket-bar" data-ticket hidden>
+        <span><strong data-ticket-cantidad>0 productos</strong> · <span data-ticket-total>₡0</span></span>
+        <a class="btn btn--gold" href="{{ route('pedidos') }}">Ver comandas</a>
+    </div>
+@endsection

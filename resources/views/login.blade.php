@@ -3,156 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de Sesión - Bon Appétit</title>
-    <style>
-        <?php include resource_path('css/app.css'); ?>
-
-        /* - CSS Grid: Contenedor principal centrado bidimensionalmente en la pantalla
-           - Flexbox: Estructuración unidimensional para los campos del formulario y botones*/
-
-        body {
-            background-color: #fdf8f5;
-            font-family: system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: grid;
-            place-items: center;
-            min-height: 100vh;
-        }
-
-        .auth-container {
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .auth-container h1 {
-            color: #5a1217;
-            text-align: center;
-            font-size: 2.2rem;
-            margin-bottom: 20px;
-        }
-
-        .auth-form {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #eee;
-        }
-
-        .auth-form fieldset {
-            border: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .auth-form legend {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #5a1217;
-            margin-bottom: 20px;
-            padding: 0;
-            width: 100%;
-            border-bottom: 2px solid #fdf8f5;
-            padding-bottom: 8px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #333;
-        }
-
-        .form-group input {
-            padding: 10px 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus {
-            border-color: #5a1217;
-        }
-
-        .btn-primary {
-            background-color: #5a1217;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.2s;
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus {
-            background-color: #8b0000;
-            outline: 2px solid #5a1217;
-        }
-    </style>
+    <title>Iniciar sesión · Bon Appétit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    @vite(['resources/css/panel.css', 'resources/js/panel.js'])
 </head>
-<body>
-    <main class="auth-container">
-        <h1>Iniciar Sesión</h1>
-        
-        <form action="/mesas" method="GET" class="auth-form" aria-label="Formulario de inicio de sesión">
-            <fieldset>
-                <legend>Datos de Usuario</legend>
+<body data-page="login">
+    <div class="login">
+        <section class="login-brand" aria-label="Bon Appétit">
+            <div>
+                <span class="login-logo"><x-icon name="cubiertos" /></span>
+                <h1>Bon Appétit</h1>
+                <span class="brand-rule"></span>
+                <p>Gestión de mesas, comandas y menú del restaurante.</p>
+            </div>
+        </section>
 
-                <div class="form-group">
-                    <label for="usuario">Nombre de Usuario:</label>
-                    <input 
-                        type="text" 
-                        id="usuario" 
-                        name="usuario" 
-                        required 
-                        aria-required="true" 
-                        placeholder="Ej: usuario123"
-                    >
-                </div>
+        <main class="login-form-side">
+            <div class="login-box">
+                <h2>Bienvenido de nuevo</h2>
+                <p class="lead">Iniciá sesión con tu cuenta del restaurante.</p>
 
-                <div class="form-group">
-                    <label for="email">Correo Electrónico:</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        required 
-                        aria-required="true" 
-                        placeholder="ejemplo@correo.com"
-                    >
-                </div>
+                {{--
+                    El formulario no navega a otra página: panel.js lo envía por POST a /api/login
+                    (Sanctum) y guarda el token. Así la contraseña nunca aparece en la URL.
+                --}}
+                <form class="panel-card login-card" method="post" action="#" data-form-login novalidate>
+                    <div class="field">
+                        <label for="email">Correo electrónico</label>
+                        <input id="email" name="email" type="email" autocomplete="username" required placeholder="nombre@bonappetit.test">
+                    </div>
+                    <div class="field">
+                        <label for="password">Contraseña</label>
+                        <div class="password-wrap">
+                            <input id="password" name="password" type="password" autocomplete="current-password" required>
+                            <button type="button" class="icon-btn" data-ver-password aria-label="Mostrar contraseña" aria-pressed="false">
+                                <x-icon name="ojo" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="login-options">
+                        <label><input type="checkbox" name="recordar" data-recordar> Recordarme</label>
+                    </div>
+                    <p class="field-error" data-login-error role="alert" hidden></p>
+                    <button type="submit" class="btn btn--primary btn--block">Iniciar sesión</button>
+                </form>
 
-                <div class="form-group">
-                    <label for="password">Contraseña:</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        required 
-                        aria-required="true" 
-                        minlength="6"
-                    >
-                </div>
-
-                <button type="submit" class="btn-primary">Ingresar</button>
-            </fieldset>
-        </form>
-    </main>
+                <p class="login-help">¿Problemas para ingresar? Contactá al administrador del sistema.</p>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
