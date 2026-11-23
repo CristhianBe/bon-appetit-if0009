@@ -9,3 +9,7 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Lab 14: scripts del contenedor siempre con LF
+*.sh text eol=lf
+Dockerfile text eol=lf

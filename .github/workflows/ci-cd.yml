@@ -1,0 +1,97 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      simular_fallo:
+        description: "Forzar una prueba fallida (evidencia de que el despliegue se detiene)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RAILWAY_SERVICE: bon-appetit-api
+
+jobs:
+  compilacion-y-pruebas:
+    name: Compilación y pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, intl, bcmath, pdo_sqlite, sqlite3
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Dependencias de PHP
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Configuración de entorno de pruebas
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Build optimizado del front-end
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          echo "Tamaño del build del front-end:" && du -sh public/build
+
+      - name: Suite de pruebas
+        env:
+          SIMULAR_FALLO_CI: ${{ github.event_name == 'workflow_dispatch' && inputs.simular_fallo && '1' || '0' }}
+        run: php artisan test
+
+  imagen:
+    name: Imagen Docker
+    needs: compilacion-y-pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construir imagen (multi-etapa)
+        run: docker build -t bon-appetit:ci .
+
+      - name: Tamaño de la imagen y usuario de ejecución
+        run: |
+          docker image ls bon-appetit:ci
+          echo "Usuario dentro del contenedor:"
+          docker run --rm --entrypoint id bon-appetit:ci
+
+      - name: Falla explícita sin configuración
+        run: |
+          if docker run --rm bon-appetit:ci; then
+            echo "ERROR: el contenedor arrancó sin variables de entorno"; exit 1
+          else
+            echo "OK: el contenedor se niega a arrancar sin configuración"
+          fi
+
+  despliegue:
+    name: Despliegue a Railway
+    needs: [compilacion-y-pruebas, imagen]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Desplegar
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service="$RAILWAY_SERVICE"

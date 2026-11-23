@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Lab 14: la app corre detrás del proxy HTTPS de la plataforma de hospedaje.
+        // Confiar en sus encabezados X-Forwarded-* para que las URLs y assets salgan en https.
+        $middleware->trustProxies(at: '*');
+
         // Corre antes que cualquier FormRequest, para que un JSON mal formado en el body
         // responda 400 en vez de terminar fallando la validación normal con 422.
         $middleware->api(prepend: [
