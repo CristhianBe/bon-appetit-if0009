@@ -4,7 +4,7 @@ Despliegue de **Bon Appétit** (back-end Laravel 13 + front-end web) en un entor
 accesible desde Internet, con contenerización, base de datos administrada e integración y
 entrega continuas.
 
-- **URL pública:** <!-- COMPLETAR --> `https://<dominio>.up.railway.app`
+- **URL pública:** https://bon-appetit-api-production.up.railway.app
 - **Verificación de estado:** `GET /up` → 200
 - **Plataforma:** Railway (contenedor Docker + MySQL administrado, HTTPS con certificado válido)
 
@@ -31,7 +31,7 @@ flowchart LR
 | Front-end web (Blade + Vite + Tailwind) | Dentro del mismo contenedor que el back-end | Se compila en la etapa `assets` del Dockerfile (`npm run build`) y se sirve desde `public/build` |
 | Back-end / API REST (Laravel 13) | Servicio `bon-appetit-api` en Railway | Contenedor Docker, puerto 8080, HTTPS lo termina el proxy de Railway |
 | Base de datos | Servicio MySQL administrado de Railway | Solo accesible por red privada (`*.railway.internal`), no expuesta a Internet |
-| App móvil | Dispositivo del usuario | APK firmado que apunta a `https://<dominio>/api` |
+| App móvil | Dispositivo del usuario | APK firmado que apunta a `https://bon-appetit-api-production.up.railway.app/api` |
 
 ## 2. Configuración por entornos
 
@@ -68,9 +68,9 @@ flowchart LR
 
 | Artefacto | Tamaño | Fuente |
 |---|---|---|
-| Build del front-end (`public/build`) | <!-- COMPLETAR --> | Log del paso *"Build optimizado del front-end"* |
-| Imagen Docker final | <!-- COMPLETAR --> | Log del paso *"Tamaño de la imagen y usuario de ejecución"* |
-| APK firmado (`app-release.apk`) | <!-- COMPLETAR --> | `mobile/android/app/release/` |
+| Build del front-end (`public/build`) | 180 KB (JS y CSS propios < 20 KB sin comprimir; el resto son las fuentes) | Log del paso *"Build optimizado del front-end"* |
+| Imagen Docker final | 66.9 MB de contenido comprimido (286 MB en disco), usuario `www-data` (uid 82) | Log del paso *"Tamaño de la imagen y usuario de ejecución"* |
+| APK firmado (`app-release.apk`) | 3.38 MB (3 546 927 bytes), variante *release* firmada con keystore propio | `mobile/android/app/release/`; captura `docs/evidencia-lab14/10-apk-firmado-generado.png` |
 
 ## 4. Arranque del contenedor y migraciones
 
@@ -106,23 +106,25 @@ despliegue queda como *skipped*, sin tener que subir código roto a `main`.
 
 | Ejecución | Resultado | Enlace |
 |---|---|---|
-| Exitosa (compila, pasa pruebas, despliega) | ✅ | <!-- COMPLETAR --> |
-| Detenida por prueba fallida (despliegue omitido) | ❌ | <!-- COMPLETAR --> |
+| Exitosa (compila, pasa pruebas, despliega) | ✅ | Ejecución CI/CD #2 (commit `62c5006`), 2 m 45 s: `docs/evidencia-lab14/09-ci-ejecucion-exitosa.png` y `08-imagen-docker-tamano-usuario.png` |
+| Detenida por prueba fallida (despliegue omitido) | ❌ | CI/CD #3 (disparo manual con `simular_fallo`): 59 pruebas pasan, falla `CompuertaCiTest`; *Imagen Docker* y *Despliegue a Railway* quedan omitidos. Capturas `06-ci-detenido-por-prueba-fallida.png` y `07-ci-detalle-prueba-fallida.png` |
 
 ## 6. Verificación del despliegue
 
 | Verificación | Cómo | Resultado esperado |
 |---|---|---|
-| Responde públicamente | Abrir `https://<dominio>/login` | Página de login |
+| Responde públicamente | Abrir `https://bon-appetit-api-production.up.railway.app/login` | Página de login |
 | Certificado válido | Candado del navegador | Certificado emitido para `*.up.railway.app` |
-| Verificación de estado | `curl -i https://<dominio>/up` | `200` |
-| API funcionando | `curl https://<dominio>/api/productos` | JSON con productos |
-| Variables sensibles no expuestas | `https://<dominio>/.env` | `404` (el servidor solo publica `public/`) |
+| Verificación de estado | `curl -i https://bon-appetit-api-production.up.railway.app/up` | `200` |
+| API funcionando | `curl https://bon-appetit-api-production.up.railway.app/api/productos` | JSON con productos |
+| Variables sensibles no expuestas | `https://bon-appetit-api-production.up.railway.app/.env` | `404` (el servidor solo publica `public/`) |
 | Sin modo depuración | Pedir una ruta inexistente de la API | JSON `404` limpio, sin traza de pila |
+
+Evidencia (capturas en `docs/evidencia-lab14/`): verificación de estado `/up` en 200, certificado válido, `/api/productos` respondiendo con URLs `https` (el proxy de confianza funciona), `/.env` en 404 y la página de login pública.
 
 ## 7. Aplicación móvil firmada
 
-1. `mobile/.env` → `VITE_API_URL=https://<dominio>/api`
+1. `mobile/.env` → `VITE_API_URL=https://bon-appetit-api-production.up.railway.app/api`
 2. `npm run build && npx cap sync android`
 3. Android Studio → *Build → Generate Signed App Bundle or APK → APK* → llave nueva (`.jks`)
    guardada **fuera del repositorio** → variante `release`.
@@ -141,3 +143,6 @@ El archivo de la llave y sus contraseñas no se suben al repositorio (`*.jks`, `
   etapas separadas.
 - **Base de datos en desarrollo vs. producción:** desarrollo usa SQLite/MySQL local; producción usa
   MySQL administrado. Las pruebas del pipeline corren sobre SQLite en memoria.
+- **Usuarios de demostración:** el *seeder* crea cuentas de demo (administrador, mesero y cajero)
+  con una contraseña de ejemplo publicada en el código. Es aceptable para la demostración del
+  laboratorio; en un entorno real habría que cambiarlas o desactivar `SEED_ON_BOOT` desde el inicio.
