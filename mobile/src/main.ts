@@ -16,7 +16,7 @@ import '@ionic/vue/css/text-alignment.css';
 import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
-import '@ionic/vue/css/palettes/dark.system.css';
+// Sin paleta oscura: la app usa siempre la identidad clara de Bon Appétit (vino sobre crema).
 
 import './theme/variables.css';
 

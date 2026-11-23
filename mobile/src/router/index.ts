@@ -10,12 +10,22 @@ declare module 'vue-router' {
 }
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', redirect: '/productos' },
+  { path: '/', redirect: '/mesas' },
   {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginPage.vue'),
     meta: { publica: true },
+  },
+  {
+    path: '/mesas',
+    name: 'mesas',
+    component: () => import('@/views/MesasPage.vue'),
+  },
+  {
+    path: '/comandas',
+    name: 'comandas',
+    component: () => import('@/views/ComandasPage.vue'),
   },
   {
     path: '/productos',
@@ -40,7 +50,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ProductoFormPage.vue'),
     props: (ruta) => ({ id: Number(ruta.params.id) }),
   },
-  { path: '/:pathMatch(.*)*', redirect: '/productos' },
+  { path: '/:pathMatch(.*)*', redirect: '/mesas' },
   {
   path: '/administracion',
   name: 'Administracion',
@@ -63,13 +73,13 @@ router.beforeEach((to) => {
   if (!to.meta.publica && !conSesion) {
     return {
       name: 'login',
-      query: to.fullPath !== '/productos' ? { redirect: to.fullPath } : {},
+      query: to.fullPath !== '/mesas' ? { redirect: to.fullPath } : {},
       replace: true,
     };
   }
 
   if (to.name === 'login' && conSesion) {
-    return { name: 'productos', replace: true };
+    return { name: 'mesas', replace: true };
   }
 
   return true;

@@ -1,11 +1,121 @@
 :root {
-  --ion-color-primary: #b5442c;
-  --ion-color-primary-rgb: 181, 68, 44;
+  /* Sistema de diseño Bon Appétit (Figma): vino, dorado y fondo crema. */
+  --ba-titulo: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --ba-borde: #e7e2da;
+  --ba-fondo: #f7f5f1;
+  --ba-fondo-suave: #faf8f5;
+  --ba-vino-suave: #f7edef;
+
+  --ion-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ion-background-color: var(--ba-fondo);
+  --ion-background-color-rgb: 247, 245, 241;
+  --ion-text-color: #1c1917;
+  --ion-text-color-rgb: 28, 25, 23;
+  --ion-item-background: #ffffff;
+  --ion-card-background: #ffffff;
+  --ion-toolbar-background: #ffffff;
+  --ion-border-color: var(--ba-borde);
+
+  --ion-color-primary: #6b1d2f;
+  --ion-color-primary-rgb: 107, 29, 47;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #9f3c27;
-  --ion-color-primary-tint: #bc5741;
+  --ion-color-primary-shade: #5e1a29;
+  --ion-color-primary-tint: #7a3444;
+
+  --ion-color-secondary: #c5a059;
+  --ion-color-secondary-rgb: 197, 160, 89;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #ad8d4e;
+  --ion-color-secondary-tint: #cbaa6a;
+
+  --ion-color-success: #276738;
+  --ion-color-success-rgb: 39, 103, 56;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #225b31;
+  --ion-color-success-tint: #3d764c;
+
+  --ion-color-warning: #b45309;
+  --ion-color-warning-rgb: 180, 83, 9;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-contrast-rgb: 255, 255, 255;
+  --ion-color-warning-shade: #9e4908;
+  --ion-color-warning-tint: #bc6422;
+
+  --ion-color-danger: #b42318;
+  --ion-color-danger-rgb: 180, 35, 24;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #9e1f15;
+  --ion-color-danger-tint: #bc392f;
+
+  --ion-color-medium: #6b6560;
+  --ion-color-medium-rgb: 107, 101, 96;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #5e5954;
+  --ion-color-medium-tint: #7a7470;
 }
+
+/* Títulos con la tipografía de la marca */
+ion-title,
+h1, h2 {
+  font-family: var(--ba-titulo);
+}
+ion-toolbar ion-title { font-weight: 700; font-size: 19px; }
+
+/* Tarjetas y listas con bordes suaves, como en el Figma */
+ion-card {
+  border: 1px solid var(--ba-borde);
+  border-radius: 12px;
+  box-shadow: none;
+}
+ion-badge {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+ion-button { --border-radius: 8px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+
+/* Barra inferior de navegación (App.vue) */
+.barra-inferior {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: #ffffff;
+  border-top: 1px solid var(--ba-borde);
+  padding: 6px 4px calc(6px + var(--ion-safe-area-bottom, 0px));
+}
+.barra-inferior button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: none;
+  border: 0;
+  color: var(--ion-color-medium);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.barra-inferior ion-icon { font-size: 22px; }
+.barra-inferior button.activo { color: var(--ion-color-primary); }
+
+/* Con la barra visible, el contenido y el botón flotante quedan por encima de ella. */
+body.con-barra ion-router-outlet { bottom: calc(58px + var(--ion-safe-area-bottom, 0px)); }
 
 /*
  * Áreas seguras: ion-header/ion-toolbar ya suman --ion-safe-area-top (notch). Para el

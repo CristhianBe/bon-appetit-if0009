@@ -1,18 +1,19 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>Bon Appetit</ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <ion-content class="contenido-seguro login-fondo">
+      <!-- Franja de marca, como el panel vino del login web -->
+      <section class="marca" aria-label="Bon Appétit">
+        <span class="logo"><ion-icon :icon="restaurantOutline" aria-hidden="true" /></span>
+        <p class="nombre">Bon Appétit</p>
+        <span class="linea" aria-hidden="true"></span>
+        <p class="lema">Gestión de mesas, comandas y menú</p>
+      </section>
 
-    <ion-content class="contenido-seguro">
       <div class="contenedor login">
-        <div class="marca">
-          <ion-icon :icon="restaurantOutline" color="primary" aria-hidden="true" />
-          <h1>Iniciar sesión</h1>
+        <div class="saludo">
+          <h1>Bienvenido de nuevo</h1>
           <ion-text color="medium">
-            <p>Ingresá con tu cuenta del restaurante.</p>
+            <p>Iniciá sesión con tu cuenta del restaurante.</p>
           </ion-text>
         </div>
 
@@ -21,7 +22,7 @@
         </ion-card>
 
         <form novalidate @submit.prevent="enviar">
-          <ion-list lines="full">
+          <ion-list lines="full" class="tarjeta-form">
             <ion-item>
               <ion-input
                 v-model="email"
@@ -62,7 +63,7 @@
 
           <ion-button type="submit" expand="block" class="ion-margin-top" :disabled="enviando">
             <ion-spinner v-if="enviando" name="crescent" />
-            <span v-else>Entrar</span>
+            <span v-else>Iniciar sesión</span>
           </ion-button>
         </form>
       </div>
@@ -76,7 +77,6 @@ import {
   IonCard,
   IonCardContent,
   IonContent,
-  IonHeader,
   IonIcon,
   IonInput,
   IonInputPasswordToggle,
@@ -85,8 +85,6 @@ import {
   IonPage,
   IonSpinner,
   IonText,
-  IonTitle,
-  IonToolbar,
 } from '@ionic/vue';
 import { alertCircleOutline, restaurantOutline } from 'ionicons/icons';
 import { computed, reactive, ref } from 'vue';
@@ -135,7 +133,7 @@ async function enviar(): Promise<void> {
 
     // replace (no push): la entrada del login se sustituye en el historial, así el
     // botón atrás de Android nunca vuelve a esta pantalla después de autenticarse.
-    const destino = typeof route.query.redirect === 'string' ? route.query.redirect : '/productos';
+    const destino = typeof route.query.redirect === 'string' ? route.query.redirect : '/mesas';
     await router.replace(destino);
   } catch (error) {
     const normalizado = normalizarError(error);
@@ -154,18 +152,37 @@ async function enviar(): Promise<void> {
 </script>
 
 <style scoped>
-.login {
-  max-width: 420px;
-  padding-top: 24px;
-}
-
+/* La franja de marca ocupa todo el ancho, por encima del padding del contenido. */
 .marca {
+  margin: calc(-16px - var(--ion-safe-area-top, 0px)) calc(-16px - var(--ion-safe-area-right, 0px)) 24px calc(-16px - var(--ion-safe-area-left, 0px));
+  padding: calc(40px + var(--ion-safe-area-top, 0px)) 24px 32px;
+  background: var(--ion-color-primary);
+  color: #fff;
   text-align: center;
-  margin-bottom: 16px;
 }
+.logo {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid var(--ion-color-secondary);
+  border-radius: 50%;
+  color: var(--ion-color-secondary);
+  font-size: 26px;
+}
+.nombre { margin: 12px 0 0; font-family: var(--ba-titulo); font-size: 32px; font-weight: 700; }
+.linea { display: block; width: 44px; height: 2px; margin: 10px auto; background: var(--ion-color-secondary); border-radius: 2px; }
+.lema { margin: 0; color: rgb(255 255 255 / 0.8); font-size: 14px; }
 
-.marca ion-icon {
-  font-size: 72px;
+.login { max-width: 420px; }
+.saludo h1 { margin: 0 0 4px; font-size: 26px; }
+.saludo p { margin: 0 0 16px; }
+
+.tarjeta-form {
+  border: 1px solid var(--ba-borde);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 0;
 }
 
 .mensaje-error {
