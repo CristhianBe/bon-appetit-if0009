@@ -66,6 +66,8 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                // Los front-ends (web y móvil) usan el rol para mostrar solo lo que le corresponde.
+                'rol' => $user->roles->first()?->name,
             ],
         ]);
     }

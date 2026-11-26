@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CobrarComandaRequest;
 use App\Http\Requests\ComandaStoreRequest;
 use App\Http\Requests\ComandaUpdateRequest;
 use App\Http\Resources\ComandaResource;
@@ -12,7 +13,7 @@ use Illuminate\Http\Response;
 
 class ComandaController extends Controller
 {
-    private const RELACIONES = ['mesa.estado', 'mesero', 'estadoComanda', 'detalles.producto'];
+    private const RELACIONES = ['mesa.estado', 'mesero', 'estadoComanda', 'metodoPago', 'detalles.producto'];
 
     public function __construct(private ComandaService $comandaService) {}
 
@@ -23,7 +24,10 @@ class ComandaController extends Controller
     {
         $this->authorize('viewAny', Comanda::class);
 
-        $comandas = $this->comandaService->listar($request->only(['mesa_id', 'estado_comanda_id', 'por_pagina']));
+        $comandas = $this->comandaService->listar(
+            $request->only(['mesa_id', 'estado_comanda_id', 'activas', 'por_pagina']),
+            $request->user(),
+        );
 
         return ComandaResource::collection($comandas);
     }
@@ -82,5 +86,18 @@ class ComandaController extends Controller
         $this->comandaService->eliminar($comanda, $request->user());
 
         return response()->noContent();
+    }
+
+    /**
+     * Cobro en caja: POST /api/comandas/{comanda}/cobrar  { "metodo_pago_id": 1 }
+     * Cierra la comanda, registra cómo pagó el cliente y libera la mesa.
+     */
+    public function cobrar(CobrarComandaRequest $request, Comanda $comanda)
+    {
+        $this->authorize('cobrar', $comanda);
+
+        $comanda = $this->comandaService->cobrar($comanda, (int) $request->validated('metodo_pago_id'), $request->user());
+
+        return ComandaResource::make($comanda->load(self::RELACIONES));
     }
 }

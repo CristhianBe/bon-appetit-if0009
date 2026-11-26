@@ -1,6 +1,5 @@
 <?php
 
-use App\Support\DatosDemo;
 use Illuminate\Support\Facades\Route;
 
 // Redirige la raíz directamente al login
@@ -9,29 +8,19 @@ Route::get('/', function () {
 });
 
 // El login no envía nada al servidor web: el formulario llama por JavaScript a
-// POST /api/login (Sanctum) y guarda el token en el navegador.
+// POST /api/login (Sanctum) y guarda el token (y el rol) en el navegador.
 Route::get('/login', function () {
     return view('login');
 })->name('login');
 
-// El menú se carga desde la API pública GET /api/productos.
-Route::get('/menu', function () {
-    return view('menu');
-})->name('menu');
-
-// Mesas, comandas y reservaciones son maquetas con datos de demostración
-// compartidos (App\Support\DatosDemo), todavía sin conexión a la API.
-Route::get('/mesas', function () {
-    return view('mesas', ['mesas' => DatosDemo::mesas()]);
-})->name('mesas');
-
-Route::get('/pedidos', function () {
-    return view('pedidos', ['comandas' => DatosDemo::comandas()]);
-})->name('pedidos');
-
-Route::get('/reservas', function () {
-    return view('reservas', ['reservas' => DatosDemo::reservas()]);
-})->name('reservas');
+// Las pantallas del panel son "cascarones": el HTML no trae datos. Cada una carga lo suyo desde la
+// API con el token de la sesión (resources/js/pages/*.js) y muestra solo lo que el rol permite.
+// Quién puede qué lo decide siempre la API; ocultar un botón es solo comodidad visual.
+Route::view('/menu', 'menu')->name('menu');
+Route::view('/mesas', 'mesas')->name('mesas');
+Route::view('/pedidos', 'pedidos')->name('pedidos');
+Route::view('/reservas', 'reservas')->name('reservas');
+Route::view('/usuarios', 'usuarios')->name('usuarios');
 
 Route::get('/api-demo', function () {
     return view('api-demo');

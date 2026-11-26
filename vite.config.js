@@ -13,6 +13,10 @@ export default defineConfig({
                 'resources/css/panel.css',
                 'resources/js/panel.js',
                 'resources/js/menu.js',
+                'resources/js/pages/mesas.js',
+                'resources/js/pages/pedidos.js',
+                'resources/js/pages/reservas.js',
+                'resources/js/pages/usuarios.js',
             ],
             refresh: true,
             fonts: [

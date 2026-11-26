@@ -1,6 +1,8 @@
 /**
  * Módulo encargado del renderizado del catálogo de platillos,
  * implementando los 4 estados de la interfaz: cargando, vacío, error y datos.
+ * Si el usuario es administrador (opción puedeEditar) cada tarjeta muestra las acciones de
+ * gestión del menú: editar, cambiar disponibilidad y eliminar (las atiende menu.js).
  *
  * Los filtros (búsqueda, categoría y "solo disponibles") se aplican en el navegador
  * sobre la página cargada. Todo texto que viene de la API se escapa antes de
@@ -8,13 +10,12 @@
  */
 
 const ICONO_CUBIERTOS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2v20M4 2v6a3 3 0 0 0 6 0V2"/><path d="M17 22V2c-2.2 1.2-3.5 3.6-3.5 7v4H17"/></svg>';
-const ICONO_MAS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 
 const escapar = (valor) => String(valor ?? '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
 ));
 
-// Mismo formato que el servidor (DatosDemo::colones): ₡38.500
+// Formato de colones del panel: ₡38.500
 export const colones = (monto) => `₡${Math.round(Number(monto || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 
 export class ListadoView {
@@ -22,8 +23,10 @@ export class ListadoView {
      * @param {Object} apiClient - Cliente HTTP con un método get(endpoint)
      * @param {HTMLElement} containerElement - Contenedor donde se pinta la vista
      * @param {Object} store - Estado global opcional (setState)
+     * @param {{puedeEditar?: boolean}} opciones
      */
-    constructor(apiClient, containerElement, store = null) {
+    constructor(apiClient, containerElement, store = null, { puedeEditar = false } = {}) {
+        this.puedeEditar = puedeEditar;
         this.apiClient = apiClient;
         this.container = containerElement;
         this.store = store;
@@ -47,7 +50,7 @@ export class ListadoView {
             this.onCategorias?.(this.categorias());
 
             if (this.items.length === 0) {
-                this.showEmptyState('Todavía no hay platillos registrados en el menú.');
+                this.showEmptyState(this.puedeEditar ? 'Todavía no hay platillos. Agregá el primero con «Nuevo platillo».' : 'Todavía no hay platillos registrados en el menú.');
                 return;
             }
             this.showDataState();
@@ -126,10 +129,12 @@ export class ListadoView {
                         ${p.descripcion ? `<p class="dish-desc">${escapar(p.descripcion)}</p>` : ''}
                         <div class="dish-foot">
                             <span class="dish-price">${colones(p.precio)}</span>
-                            <button type="button" class="btn ${disponible ? 'btn--primary' : ''}" data-agregar="${escapar(p.id)}"
-                                ${disponible ? '' : 'disabled'} aria-label="Añadir ${escapar(p.nombre)}">
-                                ${ICONO_MAS} Añadir
-                            </button>
+                            ${this.puedeEditar ? `
+                                <span class="dish-admin">
+                                    <button type="button" class="btn btn--outline" data-editar="${escapar(p.id)}">Editar</button>
+                                    <button type="button" class="btn btn--ghost" data-alternar="${escapar(p.id)}">${disponible ? 'Marcar agotado' : 'Marcar disponible'}</button>
+                                    <button type="button" class="btn btn--ghost btn--peligro" data-eliminar="${escapar(p.id)}" aria-label="Eliminar ${escapar(p.nombre)}">Eliminar</button>
+                                </span>` : ''}
                         </div>
                     </div>
                 </article>`;

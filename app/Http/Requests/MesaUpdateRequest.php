@@ -22,6 +22,7 @@ class MesaUpdateRequest extends FormRequest
                 Rule::unique('mesas', 'numero')->ignore($mesa?->id),
             ],
             'capacidad' => ['sometimes', 'integer', 'min:1'],
+            'zona' => ['sometimes', 'string', 'max:40'],
             'estado_mesa_id' => ['sometimes', 'required', 'integer', 'exists:estados_mesa,id'],
         ];
     }

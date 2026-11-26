@@ -17,6 +17,8 @@ class ComandaStoreRequest extends FormRequest
         return [
             'mesa_id' => ['required', 'integer', 'exists:mesas,id'],
             'user_id' => ['required', 'integer', 'exists:users,id'],
+            'personas' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'notas' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -29,6 +31,7 @@ class ComandaStoreRequest extends FormRequest
             'user_id.required' => 'Debe indicar el mesero responsable.',
             'user_id.integer' => 'El mesero indicado no es válido.',
             'user_id.exists' => 'El usuario indicado no existe.',
+            'personas.min' => 'Debe haber al menos una persona en la mesa.',
         ];
     }
 }

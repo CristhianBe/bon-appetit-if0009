@@ -16,6 +16,7 @@ test('la página de login responde correctamente', function () {
         ->assertDontSee('method="GET"', false);
 });
 
+// Las pantallas del panel son cascarones: el HTML no trae datos, los carga desde la API por JavaScript.
 test('las vistas del panel responden correctamente', function (string $ruta, string $texto) {
     $this->get($ruta)->assertOk()->assertSee($texto);
 })->with([
@@ -23,14 +24,20 @@ test('las vistas del panel responden correctamente', function (string $ruta, str
     'comandas' => ['/pedidos', 'Comandas activas'],
     'menú' => ['/menu', 'Menú y catálogo'],
     'reservaciones' => ['/reservas', 'Próximas reservas'],
+    'usuarios' => ['/usuarios', 'Usuarios y roles'],
 ]);
 
-test('la comanda de una mesa ocupada muestra el mismo total en mesas y comandas', function () {
-    $comanda = collect(\App\Support\DatosDemo::comandas())->firstWhere('mesa', 2);
-    $total = \App\Support\DatosDemo::colones($comanda['total']);
+test('el panel no trae datos de demostración incrustados en el HTML', function () {
+    // Antes mesas/comandas/reservas eran maquetas con datos fijos; ahora todo viene de la API.
+    $this->get('/mesas')->assertDontSee('C-0142')->assertDontSee('demostración');
+    $this->get('/pedidos')->assertDontSee('C-0142')->assertDontSee('demostración');
+    $this->get('/reservas')->assertDontSee('demostración');
+});
 
-    $this->get('/mesas')->assertSee($total);
-    $this->get('/pedidos')->assertSee($total);
+test('el menú lateral marca los enlaces de administración solo para el rol administrador', function () {
+    $this->get('/mesas')
+        ->assertSee('data-roles="administrador"', false)
+        ->assertSee(route('usuarios'), false);
 });
 
 // Lab 14: endpoint de verificación de estado que usa Railway (healthcheckPath).

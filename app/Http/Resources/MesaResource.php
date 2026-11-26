@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\ComandaService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,9 +14,21 @@ class MesaResource extends JsonResource
             'id'             => $this->id,
             'numero'         => $this->numero,
             'capacidad'      => $this->capacidad,
+            'zona'           => $this->zona,
             'estado_mesa_id' => $this->estado_mesa_id,
             'estado'         => new EstadoMesaResource($this->whenLoaded('estado') ?? $this->whenLoaded('estadoMesa')),
             'comandas'       => ComandaResource::collection($this->whenLoaded('comandas')),
+            // Resumen de la comanda en curso (null si la mesa no tiene ninguna).
+            'comanda_activa' => $this->whenLoaded('comandaActiva', fn () => $this->comandaActiva ? [
+                'id'          => $this->comandaActiva->id,
+                'estado'      => $this->comandaActiva->estadoComanda?->codigo,
+                'mesero_id'   => $this->comandaActiva->user_id,
+                'mesero'      => $this->comandaActiva->mesero?->name,
+                'personas'    => $this->comandaActiva->personas,
+                'abierta_en'  => $this->comandaActiva->created_at?->toIso8601String(),
+                'items'       => (int) $this->comandaActiva->detalles->sum('cantidad'),
+                'total'       => ComandaService::calcularTotales($this->comandaActiva->detalles)['total'],
+            ] : null),
             'creado_en'      => $this->created_at?->toIso8601String(),
             'actualizado_en' => $this->updated_at?->toIso8601String(),
             'created_at'     => $this->created_at,

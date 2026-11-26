@@ -29,6 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \App\Http\Middleware\ValidarJsonMiddleware::class,
         ]);
+
+        // Atajo para proteger rutas por rol: ->middleware('rol:administrador').
+        $middleware->alias([
+            'rol' => \App\Http\Middleware\RequiereRol::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

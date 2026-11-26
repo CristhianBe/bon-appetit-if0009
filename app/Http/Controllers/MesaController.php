@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\MesaStoreRequest;
 use App\Http\Requests\MesaUpdateRequest;
 use App\Http\Resources\MesaResource;
+use App\Exceptions\ReglaNegocioException;
+use App\Models\EstadoMesa;
 use App\Models\Mesa;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class MesaController extends Controller
@@ -13,9 +16,16 @@ class MesaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return MesaResource::collection(Mesa::with('estado')->orderBy('numero')->paginate(15));
+        $porPagina = max(min((int) $request->query('por_pagina', 15), 100), 1);
+
+        // comandaActiva: quién atiende cada mesa ocupada y cuánto lleva consumido (para el salón).
+        $mesas = Mesa::with(['estado', 'comandaActiva.mesero', 'comandaActiva.estadoComanda', 'comandaActiva.detalles'])
+            ->orderBy('numero')
+            ->paginate($porPagina);
+
+        return MesaResource::collection($mesas);
     }
 
     /**
@@ -23,7 +33,11 @@ class MesaController extends Controller
      */
     public function store(MesaStoreRequest $request)
     {
-        $mesa = Mesa::create($request->validated());
+        $datos = $request->validated();
+        // Si no se indica estado inicial, la mesa nace libre.
+        $datos['estado_mesa_id'] ??= EstadoMesa::where('codigo', 'libre')->value('id');
+
+        $mesa = Mesa::create($datos);
 
         return MesaResource::make($mesa->load('estado'))
             ->response()
@@ -54,6 +68,14 @@ class MesaController extends Controller
      */
     public function destroy(Mesa $mesa)
     {
+        if ($mesa->comandas()->exists()) {
+            throw new ReglaNegocioException(
+                'No se puede eliminar una mesa que ya tiene comandas registradas.',
+                'mesa_con_comandas',
+                409,
+            );
+        }
+
         $mesa->delete();
 
         return response()->noContent();

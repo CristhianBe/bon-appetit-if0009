@@ -1,17 +1,21 @@
 @php
+    // 'roles' = quién ve el enlace. Es solo comodidad visual: la API vuelve a validar cada acción.
+    $todos = 'administrador,mesero,cajero';
     $enlaces = [
-        ['ruta' => 'mesas', 'texto' => 'Mesas', 'icono' => 'mesas'],
-        ['ruta' => 'pedidos', 'texto' => 'Comandas', 'icono' => 'comandas'],
-        ['ruta' => 'reservas', 'texto' => 'Reservaciones', 'icono' => 'reservas'],
+        ['ruta' => 'mesas', 'texto' => 'Mesas', 'icono' => 'mesas', 'roles' => $todos],
+        ['ruta' => 'pedidos', 'texto' => 'Comandas', 'icono' => 'comandas', 'roles' => $todos],
+        ['ruta' => 'reservas', 'texto' => 'Reservaciones', 'icono' => 'reservas', 'roles' => $todos],
+        ['ruta' => 'menu', 'texto' => 'Menú y catálogo', 'icono' => 'menu', 'roles' => $todos],
     ];
     $admin = [
-        ['ruta' => 'menu', 'texto' => 'Menú y catálogo', 'icono' => 'menu'],
+        ['ruta' => 'usuarios', 'texto' => 'Usuarios y roles', 'icono' => 'personas', 'roles' => 'administrador'],
     ];
     $movil = [
-        ['ruta' => 'mesas', 'texto' => 'Mesas', 'icono' => 'mesas'],
-        ['ruta' => 'pedidos', 'texto' => 'Comandas', 'icono' => 'comandas'],
-        ['ruta' => 'menu', 'texto' => 'Menú', 'icono' => 'menu'],
-        ['ruta' => 'reservas', 'texto' => 'Reservas', 'icono' => 'reservas'],
+        ['ruta' => 'mesas', 'texto' => 'Mesas', 'icono' => 'mesas', 'roles' => $todos],
+        ['ruta' => 'pedidos', 'texto' => 'Comandas', 'icono' => 'comandas', 'roles' => $todos],
+        ['ruta' => 'menu', 'texto' => 'Menú', 'icono' => 'menu', 'roles' => $todos],
+        ['ruta' => 'reservas', 'texto' => 'Reservas', 'icono' => 'reservas', 'roles' => $todos],
+        ['ruta' => 'usuarios', 'texto' => 'Usuarios', 'icono' => 'personas', 'roles' => 'administrador'],
     ];
 @endphp
 <!DOCTYPE html>
@@ -39,14 +43,14 @@
             <nav aria-label="Navegación principal">
                 <p class="nav-section">Operación</p>
                 @foreach ($enlaces as $e)
-                    <a href="{{ route($e['ruta']) }}" @class(['nav-link', 'is-active' => request()->routeIs($e['ruta'])]) @if (request()->routeIs($e['ruta'])) aria-current="page" @endif>
+                    <a href="{{ route($e['ruta']) }}" data-roles="{{ $e['roles'] }}" @class(['nav-link', 'is-active' => request()->routeIs($e['ruta'])]) @if (request()->routeIs($e['ruta'])) aria-current="page" @endif>
                         <x-icon :name="$e['icono']" /> {{ $e['texto'] }}
                     </a>
                 @endforeach
 
-                <p class="nav-section">Administración</p>
+                <p class="nav-section" data-roles="administrador" hidden>Administración</p>
                 @foreach ($admin as $e)
-                    <a href="{{ route($e['ruta']) }}" @class(['nav-link', 'is-active' => request()->routeIs($e['ruta'])]) @if (request()->routeIs($e['ruta'])) aria-current="page" @endif>
+                    <a href="{{ route($e['ruta']) }}" data-roles="{{ $e['roles'] }}" hidden @class(['nav-link', 'is-active' => request()->routeIs($e['ruta'])]) @if (request()->routeIs($e['ruta'])) aria-current="page" @endif>
                         <x-icon :name="$e['icono']" /> {{ $e['texto'] }}
                     </a>
                 @endforeach
@@ -68,7 +72,7 @@
                         <span class="avatar" data-user-initials aria-hidden="true">BA</span>
                         <span>
                             <strong data-user-name>Usuario</strong>
-                            <small>Turno tarde</small>
+                            <small data-user-role>Cargando…</small>
                         </span>
                     </div>
                     <button type="button" class="icon-btn topbar-logout" data-logout aria-label="Cerrar sesión">
@@ -87,11 +91,23 @@
 
     <nav class="bottom-nav" aria-label="Navegación móvil">
         @foreach ($movil as $e)
-            <a href="{{ route($e['ruta']) }}" @class(['is-active' => request()->routeIs($e['ruta'])]) @if (request()->routeIs($e['ruta'])) aria-current="page" @endif>
+            <a href="{{ route($e['ruta']) }}" data-roles="{{ $e['roles'] }}" @if ($e['roles'] !== $todos) hidden @endif @class(['is-active' => request()->routeIs($e['ruta'])]) @if (request()->routeIs($e['ruta'])) aria-current="page" @endif>
                 <x-icon :name="$e['icono']" /> {{ $e['texto'] }}
             </a>
         @endforeach
     </nav>
+
+    {{-- Diálogo de confirmación compartido (lo usa confirmar() de core.js). --}}
+    <dialog class="modal" id="dlg-confirmar" aria-labelledby="dlg-confirmar-titulo">
+        <div class="modal-head">
+            <h2 id="dlg-confirmar-titulo" data-confirmar-titulo>Confirmar</h2>
+        </div>
+        <p class="modal-body" data-confirmar-mensaje></p>
+        <div class="modal-foot">
+            <button type="button" class="btn btn--ghost" data-cerrar>Cancelar</button>
+            <button type="button" class="btn btn--primary" data-confirmar-ok>Confirmar</button>
+        </div>
+    </dialog>
 
     <div class="toast" role="status" aria-live="polite" data-toast>
         <x-icon name="info" /> <span data-toast-text></span>

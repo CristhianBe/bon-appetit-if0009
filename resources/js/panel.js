@@ -1,68 +1,39 @@
 /**
- * Comportamiento compartido del panel web: sesión, filtros, diálogos, comandas,
- * formulario de reservas y login. Cada parte se activa solo si su HTML existe en la página.
+ * Comportamiento global del panel web: guarda de sesión, cierre de sesión, filtrado del menú
+ * por rol, diálogos y login. Lo específico de cada pantalla vive en resources/js/pages/*.js.
  */
+import {
+    ETIQUETA_ROL, DURACION_TOKEN_MS, api, aplicarRoles, asegurarRol, borrarSesion, guardarSesion,
+    sesionVigente, usuario, avisar,
+} from './core.js';
 
-const CLAVE_SESION = 'ba_sesion';
-const DURACION_TOKEN_MS = 30 * 60 * 1000; // igual que la expiración del token en AuthController
-
-/* ----------------------------------------------------------------- Sesión */
-function leerSesion() {
-    for (const almacen of [sessionStorage, localStorage]) {
-        try {
-            const sesion = JSON.parse(almacen.getItem(CLAVE_SESION) || 'null');
-            if (sesion) return sesion;
-        } catch {
-            /* almacenamiento bloqueado o dato corrupto */
-        }
-    }
-    return null;
-}
-
-function guardarSesion(sesion, recordar) {
-    try {
-        (recordar ? localStorage : sessionStorage).setItem(CLAVE_SESION, JSON.stringify(sesion));
-    } catch {
-        /* sin almacenamiento: la sesión dura solo esta carga de página */
-    }
-}
-
-function borrarSesion() {
-    for (const almacen of [sessionStorage, localStorage]) {
-        try { almacen.removeItem(CLAVE_SESION); } catch { /* nada */ }
-    }
-}
-
-function sesionVigente() {
-    const sesion = leerSesion();
-    if (!sesion?.token || Date.now() > sesion.expira) {
-        borrarSesion();
-        return null;
-    }
-    return sesion;
-}
+// menu.js y otras páginas importaban avisar desde aquí: se mantiene la exportación.
+export { avisar };
 
 function iniciales(nombre = '') {
     return nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('') || 'BA';
 }
 
-function protegerPagina() {
+async function protegerPagina() {
     const sesion = sesionVigente();
     if (!sesion) {
         window.location.replace('/login');
         return;
     }
-    document.querySelectorAll('[data-user-name]').forEach((el) => { el.textContent = sesion.user?.name ?? 'Usuario'; });
-    document.querySelectorAll('[data-user-initials]').forEach((el) => { el.textContent = iniciales(sesion.user?.name); });
+
+    // Menú lateral y botones se muestran según el rol (administrador / mesero / cajero).
+    await asegurarRol();
+    const actual = usuario();
+    document.querySelectorAll('[data-user-name]').forEach((el) => { el.textContent = actual?.name ?? 'Usuario'; });
+    document.querySelectorAll('[data-user-initials]').forEach((el) => { el.textContent = iniciales(actual?.name); });
+    document.querySelectorAll('[data-user-role]').forEach((el) => { el.textContent = ETIQUETA_ROL[actual?.rol] ?? 'Sin rol'; });
+    aplicarRoles();
 
     document.querySelectorAll('[data-logout]').forEach((boton) => {
         boton.addEventListener('click', async () => {
             boton.disabled = true;
             try {
-                await fetch('/api/logout', {
-                    method: 'POST',
-                    headers: { Accept: 'application/json', Authorization: `Bearer ${sesion.token}` },
-                });
+                await api.post('/logout', null);
             } catch {
                 /* aunque falle la red, la sesión local se cierra igual */
             }
@@ -72,18 +43,7 @@ function protegerPagina() {
     });
 }
 
-/* ----------------------------------------------------------------- Aviso flotante */
-let temporizadorAviso;
-export function avisar(texto) {
-    const toast = document.querySelector('[data-toast]');
-    if (!toast) return;
-    toast.querySelector('[data-toast-text]').textContent = texto;
-    toast.classList.add('is-visible');
-    clearTimeout(temporizadorAviso);
-    temporizadorAviso = setTimeout(() => toast.classList.remove('is-visible'), 3200);
-}
-
-/* ----------------------------------------------------------------- Diálogos y acciones demo */
+/* ----------------------------------------------------------------- Diálogos */
 function iniciarDialogos() {
     document.addEventListener('click', (e) => {
         const abrir = e.target.closest('[data-abrir]');
@@ -91,133 +51,15 @@ function iniciarDialogos() {
 
         const cerrar = e.target.closest('[data-cerrar]');
         if (cerrar) cerrar.closest('dialog')?.close();
-
-        const demo = e.target.closest('[data-demo]');
-        if (demo) avisar(demo.dataset.demo);
     });
 
-    // Clic en el fondo oscuro cierra el diálogo.
-    document.querySelectorAll('dialog').forEach((dialogo) => {
-        dialogo.addEventListener('click', (e) => { if (e.target === dialogo) dialogo.close(); });
-    });
-}
-
-/* ----------------------------------------------------------------- Filtros (mesas y comandas) */
-function iniciarFiltros() {
-    const barra = document.querySelector('[data-filtros]');
-    if (!barra) return;
-
-    const items = [...document.querySelectorAll('[data-item]')];
-    const vacio = document.querySelector('[data-vacio]');
-    const filtros = {};
-    let texto = '';
-
-    const aplicar = () => {
-        let visibles = 0;
-        for (const item of items) {
-            const coincide = Object.entries(filtros).every(([clave, valor]) => !valor || item.dataset[clave] === valor)
-                && (!texto || item.dataset.texto.includes(texto));
-            item.hidden = !coincide;
-            if (coincide) visibles += 1;
+    // Clic en el fondo oscuro cierra el diálogo (también los que se crean después).
+    document.addEventListener('mousedown', (e) => {
+        if (e.target instanceof HTMLDialogElement && e.target.open) {
+            const caja = e.target.getBoundingClientRect();
+            const fuera = e.clientX < caja.left || e.clientX > caja.right || e.clientY < caja.top || e.clientY > caja.bottom;
+            if (fuera) e.target.close();
         }
-        if (vacio) vacio.hidden = visibles > 0;
-        barra.dispatchEvent(new CustomEvent('filtrado'));
-    };
-
-    barra.querySelectorAll('[data-filtro]').forEach((chip) => {
-        chip.addEventListener('click', () => {
-            const grupo = chip.dataset.filtro;
-            barra.querySelectorAll(`[data-filtro="${grupo}"]`).forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
-            filtros[grupo] = chip.dataset.valor;
-            aplicar();
-        });
-    });
-
-    barra.querySelectorAll('[data-filtro-select]').forEach((select) => {
-        select.addEventListener('change', () => { filtros[select.dataset.filtroSelect] = select.value; aplicar(); });
-    });
-
-    barra.querySelector('[data-filtro-buscar]')?.addEventListener('input', (e) => {
-        texto = e.target.value.trim().toLowerCase();
-        aplicar();
-    });
-}
-
-/* ----------------------------------------------------------------- Comandas: lista + detalle */
-function iniciarComandas() {
-    const tarjetas = [...document.querySelectorAll('[data-comanda]')];
-    if (!tarjetas.length) return;
-
-    const seleccionar = (codigo, enfocar = false) => {
-        tarjetas.forEach((t) => t.setAttribute('aria-current', String(t.dataset.comanda === codigo)));
-        document.querySelectorAll('[data-detalle]').forEach((d) => { d.hidden = d.dataset.detalle !== codigo; });
-        if (enfocar && window.matchMedia('(max-width: 1100px)').matches) {
-            const detalle = document.querySelector(`[data-detalle="${codigo}"]`);
-            detalle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            detalle?.focus({ preventScroll: true });
-        }
-    };
-
-    tarjetas.forEach((t) => t.addEventListener('click', () => {
-        seleccionar(t.dataset.comanda, true);
-        history.replaceState(null, '', `#${t.dataset.comanda}`);
-    }));
-
-    // Al filtrar, si la comanda abierta quedó oculta, se muestra la primera visible.
-    document.querySelector('[data-filtros]')?.addEventListener('filtrado', () => {
-        const actual = tarjetas.find((t) => t.getAttribute('aria-current') === 'true');
-        if (actual && !actual.hidden) return;
-        const primera = tarjetas.find((t) => !t.hidden);
-        if (primera) seleccionar(primera.dataset.comanda);
-    });
-
-    // Enlace directo desde Mesas: /pedidos#C-0142
-    const desdeUrl = decodeURIComponent(window.location.hash.slice(1));
-    if (tarjetas.some((t) => t.dataset.comanda === desdeUrl)) seleccionar(desdeUrl);
-}
-
-/* ----------------------------------------------------------------- Reservas */
-function iniciarReservas() {
-    const form = document.querySelector('[data-form-reserva]');
-    if (!form) return;
-
-    const fecha = form.querySelector('#fecha');
-    const hoy = new Date();
-    const iso = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-    fecha.min = iso;
-    if (!fecha.value) fecha.value = iso;
-
-    const error = form.querySelector('[data-form-error]');
-    const lista = document.querySelector('[data-lista-reservas]');
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!form.checkValidity()) {
-            const invalido = form.querySelector(':invalid');
-            error.textContent = `Revisá el campo «${form.querySelector(`label[for="${invalido.id}"]`)?.firstChild.textContent.trim() ?? invalido.name}».`;
-            error.hidden = false;
-            invalido.focus();
-            return;
-        }
-        error.hidden = true;
-
-        const datos = new FormData(form);
-        const item = document.createElement('li');
-        item.className = 'reserva';
-        const dia = datos.get('fecha') === iso ? 'Hoy' : datos.get('fecha').split('-').reverse().slice(0, 2).join('/');
-        // textContent (no innerHTML): lo que escribe el usuario nunca se interpreta como HTML.
-        item.innerHTML = '<span class="reserva-hora"><strong></strong><small></small></span>'
-            + '<span class="reserva-info"><strong></strong><span></span></span>'
-            + '<span class="badge badge--warning">Pendiente</span>';
-        item.querySelector('.reserva-hora strong').textContent = datos.get('hora');
-        item.querySelector('.reserva-hora small').textContent = dia;
-        item.querySelector('.reserva-info strong').textContent = datos.get('nombre');
-        item.querySelector('.reserva-info span').textContent = `${datos.get('personas')} personas · ${datos.get('zona')}`;
-        lista.prepend(item);
-
-        avisar(`Reserva registrada para ${datos.get('nombre')} (demostración, no se guarda en la base de datos)`);
-        form.reset();
-        fecha.value = iso;
     });
 }
 
@@ -232,6 +74,10 @@ function iniciarLogin() {
     }
 
     const error = form.querySelector('[data-login-error]');
+    if (new URLSearchParams(window.location.search).has('expirada')) {
+        error.textContent = 'Tu sesión venció por seguridad. Ingresá de nuevo para continuar.';
+        error.hidden = false;
+    }
     const boton = form.querySelector('button[type="submit"]');
     const password = form.querySelector('#password');
 
@@ -290,7 +136,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     protegerPagina();
     iniciarDialogos();
-    iniciarFiltros();
-    iniciarComandas();
-    iniciarReservas();
 });

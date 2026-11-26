@@ -22,9 +22,18 @@ class ComandaService
 
     private const TAMANO_PAGINA_MAXIMO = 50;
 
-    public function listar(array $filtros): LengthAwarePaginator
+    /**
+     * $actor es opcional para no romper a quien ya llamaba sin él. Cuando se pasa y es un
+     * mesero, la lista se limita a SUS comandas: coincide con ComandaPolicy::view(), así el
+     * listado no muestra comandas que luego darían 403 al abrirlas. Administrador y cajero ven todas.
+     */
+    public function listar(array $filtros, ?User $actor = null): LengthAwarePaginator
     {
-        $query = Comanda::with(['mesa.estado', 'mesero', 'estadoComanda', 'detalles.producto']);
+        $query = Comanda::with(['mesa.estado', 'mesero', 'estadoComanda', 'metodoPago', 'detalles.producto']);
+
+        if ($actor && $actor->hasRole('mesero') && ! $actor->hasAnyRole(['administrador', 'cajero'])) {
+            $query->where('user_id', $actor->id);
+        }
 
         if (! empty($filtros['mesa_id'])) {
             $query->where('mesa_id', $filtros['mesa_id']);
@@ -34,10 +43,15 @@ class ComandaService
             $query->where('estado_comanda_id', $filtros['estado_comanda_id']);
         }
 
+        // ?activas=1 → todo lo que no está cerrado (lo que el salón y la caja necesitan ver).
+        if (! empty($filtros['activas'])) {
+            $query->whereHas('estadoComanda', fn ($q) => $q->where('codigo', '!=', 'cerrada'));
+        }
+
         $porPagina = min((int) ($filtros['por_pagina'] ?? 15), self::TAMANO_PAGINA_MAXIMO);
         $porPagina = max($porPagina, 1);
 
-        return $query->latest()->paginate($porPagina);
+        return $query->latest('id')->paginate($porPagina);
     }
 
     /**
@@ -80,6 +94,8 @@ class ComandaService
                 'mesa_id' => $mesa->id,
                 'user_id' => $datos['user_id'],
                 'estado_comanda_id' => $estadoAbierta->id,
+                'personas' => $datos['personas'] ?? null,
+                'notas' => $datos['notas'] ?? null,
             ]);
 
             $mesa->update(['estado_mesa_id' => $estadoOcupada->id]);
@@ -166,6 +182,55 @@ class ComandaService
         // permiso que update(): administrador, o el mesero dueño.
         Gate::forUser($actor)->authorize('update', $comanda);
 
+        return $this->finalizar($comanda, null);
+    }
+
+    /**
+     * Cobro en caja. A diferencia de cerrar() —que es "editar la comanda"—, cobrar es el
+     * trabajo del cajero: lo permite ComandaPolicy::cobrar() (administrador o cajero) y exige
+     * indicar con qué método pagó el cliente. Cierra la comanda y libera la mesa.
+     */
+    public function cobrar(Comanda $comanda, int $metodoPagoId, User $actor): Comanda
+    {
+        Gate::forUser($actor)->authorize('cobrar', $comanda);
+
+        if ($comanda->estadoComanda->codigo === 'cerrada') {
+            throw new ReglaNegocioException(
+                'Esta comanda ya fue cobrada y cerrada.',
+                'comanda_ya_cerrada',
+                409,
+            );
+        }
+
+        return $this->finalizar($comanda, $metodoPagoId);
+    }
+
+    /**
+     * Regla de precios en UN solo lugar (la usan el cierre, el cobro y la API al mostrar la
+     * comanda): subtotal = Σ cantidad × precio; si llega al umbral, 10 % de descuento.
+     *
+     * @param  iterable<DetalleComanda>  $detalles
+     * @return array{subtotal: float, descuento: float, total: float}
+     */
+    public static function calcularTotales(iterable $detalles): array
+    {
+        $subtotal = 0.0;
+        foreach ($detalles as $detalle) {
+            $subtotal += $detalle->cantidad * (float) $detalle->precio_unitario;
+        }
+
+        $subtotal = round($subtotal, 2);
+        $descuento = $subtotal >= self::UMBRAL_DESCUENTO ? round($subtotal * self::PORCENTAJE_DESCUENTO, 2) : 0.0;
+
+        return [
+            'subtotal' => $subtotal,
+            'descuento' => $descuento,
+            'total' => round($subtotal - $descuento, 2),
+        ];
+    }
+
+    private function finalizar(Comanda $comanda, ?int $metodoPagoId): Comanda
+    {
         if ($comanda->detalles()->count() === 0) {
             throw new ReglaNegocioException(
                 'No se puede cerrar una comanda sin al menos un producto.',
@@ -174,14 +239,8 @@ class ComandaService
             );
         }
 
-        return DB::transaction(function () use ($comanda) {
-            $subtotal = $comanda->detalles()
-                ->selectRaw('SUM(cantidad * precio_unitario) as total')
-                ->value('total');
-
-            $total = $subtotal >= self::UMBRAL_DESCUENTO
-                ? $subtotal * (1 - self::PORCENTAJE_DESCUENTO)
-                : $subtotal;
+        return DB::transaction(function () use ($comanda, $metodoPagoId) {
+            $total = self::calcularTotales($comanda->detalles()->get())['total'];
 
             $estadoCerrada = EstadoComanda::where('codigo', 'cerrada')->firstOrFail();
             $estadoLibre = EstadoMesa::where('codigo', 'libre')->firstOrFail();
@@ -189,6 +248,7 @@ class ComandaService
             $comanda->update([
                 'total' => $total,
                 'estado_comanda_id' => $estadoCerrada->id,
+                'metodo_pago_id' => $metodoPagoId ?? $comanda->metodo_pago_id,
                 'cerrada_en' => now(),
             ]);
 
@@ -217,6 +277,15 @@ class ComandaService
     {
         Gate::forUser($actor)->authorize('delete', $comanda);
 
-        $comanda->delete();
+        DB::transaction(function () use ($comanda) {
+            // Cancelar una comanda que sigue abierta debe devolver la mesa al salón;
+            // si no, la mesa quedaría "ocupada" para siempre sin ninguna comanda.
+            if ($comanda->estadoComanda->codigo !== 'cerrada') {
+                $estadoLibre = EstadoMesa::where('codigo', 'libre')->firstOrFail();
+                $comanda->mesa->update(['estado_mesa_id' => $estadoLibre->id]);
+            }
+
+            $comanda->delete();
+        });
     }
 }

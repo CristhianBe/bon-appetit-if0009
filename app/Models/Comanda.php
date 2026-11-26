@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Comanda extends Model
 {
     use HasFactory;
-    protected $fillable = ['mesa_id', 'user_id', 'estado_comanda_id', 'total', 'cerrada_en'];
+    protected $fillable = ['mesa_id', 'user_id', 'estado_comanda_id', 'metodo_pago_id', 'personas', 'notas', 'total', 'cerrada_en'];
 
 protected $casts = [
     'total' => 'decimal:2',
@@ -40,5 +40,10 @@ public function detalles(): HasMany
 public function estadoComanda(): BelongsTo
 {
     return $this->belongsTo(EstadoComanda::class);
+}
+
+public function metodoPago(): BelongsTo
+{
+    return $this->belongsTo(MetodoPago::class, 'metodo_pago_id');
 }
 }

@@ -9,8 +9,7 @@ use App\Models\User;
 //   - administrador → ve, abre, edita y elimina CUALQUIER comanda.
 //   - mesero        → abre comandas, pero solo ve/edita/elimina las que ÉL abrió
 //                      (comanda->user_id, ver Comanda::mesero()).
-//   - cajero        → solo lectura de CUALQUIER comanda (necesita verlas para cobrar/cerrar
-//                      caja), no puede abrir/editar/eliminar.
+//   - cajero        → lee CUALQUIER comanda y la COBRA (cobrar()), pero no puede abrir/editar/eliminar.
 //   - sin rol       → no puede hacer nada (ni siquiera leer).
 class ComandaPolicy
 {
@@ -62,5 +61,14 @@ class ComandaPolicy
     {
         return $user->hasRole('administrador')
             || ($user->hasRole('mesero') && $comanda->user_id === $user->id);
+    }
+
+    /**
+     * ¿Puede cobrar ESTA comanda (POST /api/comandas/{id}/cobrar)?
+     * Cobrar es trabajo de caja: administrador y cajero. El mesero toma el pedido pero no cobra.
+     */
+    public function cobrar(User $user, Comanda $comanda): bool
+    {
+        return $user->hasRole('administrador') || $user->hasRole('cajero');
     }
 }

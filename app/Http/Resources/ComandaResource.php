@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\ComandaService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,6 +17,12 @@ class ComandaResource extends JsonResource
             'estado_comanda_id' => $this->estado_comanda_id,
             'metodo_pago_id'    => $this->metodo_pago_id,
             'total'             => (float) $this->total,
+            'personas'          => $this->personas,
+            // Mientras la comanda está abierta 'total' vale 0; estos tres salen de los detalles
+            // con la misma regla que usa el cierre (ComandaService::calcularTotales).
+            'subtotal'          => $this->whenLoaded('detalles', fn () => ComandaService::calcularTotales($this->detalles)['subtotal']),
+            'descuento'         => $this->whenLoaded('detalles', fn () => ComandaService::calcularTotales($this->detalles)['descuento']),
+            'total_calculado'   => $this->whenLoaded('detalles', fn () => ComandaService::calcularTotales($this->detalles)['total']),
             'notas'             => $this->notas,
             'cerrada_en'        => $this->cerrada_en,
             'mesa'              => new MesaResource($this->whenLoaded('mesa')),

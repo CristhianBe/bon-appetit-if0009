@@ -13,10 +13,12 @@ class MesaSeeder extends Seeder
     {
         $libre = EstadoMesa::where('codigo', 'libre')->firstOrFail();
 
-        for ($numero = 1; $numero <= 8; $numero++) {
+        // 12 mesas en tres zonas, como el salón del restaurante.
+        foreach (range(1, 12) as $numero) {
             Mesa::create([
                 'numero' => $numero,
-                'capacidad' => $numero <= 4 ? 4 : 6,
+                'capacidad' => $numero <= 4 ? 4 : ($numero <= 8 ? 6 : 2),
+                'zona' => $numero <= 6 ? 'Salón' : ($numero <= 10 ? 'Terraza' : 'Barra'),
                 'estado_mesa_id' => $libre->id,
             ]);
         }
