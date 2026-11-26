@@ -21,7 +21,6 @@ class DemoConsultasN1 extends Command
             $conteo[$fase]++;
         });
 
-        // --- SIN eager loading: cada acceso a ->detalles y ->producto dispara una consulta nueva ---
         $fase = 'sin_eager';
         $comandas = Comanda::take(10)->get();
         foreach ($comandas as $comanda) {
@@ -30,7 +29,6 @@ class DemoConsultasN1 extends Command
             }
         }
 
-        // --- CON eager loading: las relaciones se precargan en 2 consultas extra, sin importar cuántas comandas haya ---
         $fase = 'con_eager';
         $comandas = Comanda::with('detalles.producto')->take(10)->get();
         foreach ($comandas as $comanda) {

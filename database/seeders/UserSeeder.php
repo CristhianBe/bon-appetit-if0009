@@ -10,9 +10,6 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // La contraseña conocida de las cuentas demo ("Password123!") solo se usa en desarrollo y
-        // pruebas. En cualquier otro entorno (producción) se toma de SEED_DEMO_PASSWORD y, si no
-        // está definida, se genera una aleatoria: así nunca quedan credenciales públicas en línea.
         $password = app()->environment(['local', 'testing'])
             ? 'Password123!'
             : (config('app.seed_demo_password') ?: Str::random(32));

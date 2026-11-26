@@ -18,7 +18,6 @@ class MesaResource extends JsonResource
             'estado_mesa_id' => $this->estado_mesa_id,
             'estado'         => new EstadoMesaResource($this->whenLoaded('estado') ?? $this->whenLoaded('estadoMesa')),
             'comandas'       => ComandaResource::collection($this->whenLoaded('comandas')),
-            // Resumen de la comanda en curso (null si la mesa no tiene ninguna).
             'comanda_activa' => $this->whenLoaded('comandaActiva', fn () => $this->comandaActiva ? [
                 'id'          => $this->comandaActiva->id,
                 'estado'      => $this->comandaActiva->estadoComanda?->codigo,

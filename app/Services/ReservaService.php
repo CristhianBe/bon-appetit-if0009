@@ -11,12 +11,10 @@ use Illuminate\Support\Carbon;
 
 class ReservaService
 {
-    /** Cuánto "ocupa" una reserva la mesa: dos reservas a menos de este tiempo chocan. */
     public const DURACION_MINUTOS = 120;
 
     private const TAMANO_PAGINA_MAXIMO = 100;
 
-    /** El restaurante opera en hora de Costa Rica; el servidor corre en UTC. */
     public const ZONA_HORARIA = 'America/Costa_Rica';
 
     public static function hoy(): string
@@ -85,10 +83,6 @@ class ReservaService
         $reserva->delete();
     }
 
-    /**
-     * Reglas que dependen de la mesa elegida: que quepan los comensales y que no choque con
-     * otra reserva activa del mismo día (a menos de DURACION_MINUTOS de distancia).
-     */
     private function validarMesa(?int $mesaId, int $personas, string $fecha, string $hora, string $estado, ?int $ignorarId): void
     {
         if (! $mesaId || ! in_array($estado, Reserva::ESTADOS_ACTIVOS, true)) {

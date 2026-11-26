@@ -4,12 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Conexión del front-end con el backend:
- *  - mesas.zona: el salón se organiza por zonas (Salón, Terraza, Barra…).
- *  - comandas.metodo_pago_id: cómo pagó el cliente al cobrar (lo registra el cajero).
- *  - comandas.personas / notas: datos que el mesero captura al abrir la mesa.
- */
 return new class extends Migration
 {
     public function up(): void

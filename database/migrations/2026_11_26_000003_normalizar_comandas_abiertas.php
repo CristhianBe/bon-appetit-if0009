@@ -3,16 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Limpieza de datos para el panel conectado a la API.
- *
- * El seeder anterior creaba comandas con estados al azar (abiertas, en preparación…) sin ocupar
- * la mesa. Con el panel real eso se ve como mesas "libres" con varias comandas activas a la vez.
- * Regla que deja todo coherente:
- *   - mesa libre    → sus comandas no cerradas se cierran;
- *   - mesa ocupada  → se conserva la comanda activa más reciente y las demás se cierran.
- * Una comanda real abierta desde la app siempre ocupa su mesa, así que no se toca.
- */
 return new class extends Migration
 {
     public function up(): void
@@ -21,7 +11,7 @@ return new class extends Migration
         $ocupada = DB::table('estados_mesa')->where('codigo', 'ocupada')->value('id');
 
         if (! $cerrada) {
-            return; // base vacía (por ejemplo, durante las pruebas): no hay nada que normalizar
+            return;
         }
 
         $activas = DB::table('comandas')
@@ -53,6 +43,5 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Es una corrección de datos: no hay forma (ni necesidad) de volver al estado incoherente.
     }
 };

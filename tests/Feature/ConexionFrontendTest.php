@@ -11,9 +11,6 @@ use Database\Seeders\CatalogosSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
-// Pruebas de lo que necesita el front-end web: permisos por rol en las rutas, cobro en caja
-// y datos del salón (mesas con su comanda activa).
-
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
@@ -45,8 +42,6 @@ function comandaConProductoFront(User $mesero, Mesa $mesa, int $cantidad = 2)
 
     return $comanda->refresh();
 }
-
-// ------------------------------------------------------------------ Permisos por rol
 
 it('solo el administrador gestiona usuarios y roles', function (string $rol, int $esperado) {
     Sanctum::actingAs(usuarioConRol($rol));
@@ -88,8 +83,6 @@ it('el login y /api/user devuelven el rol del usuario', function () {
     $this->withToken($token)->getJson('/api/user')->assertOk()->assertJsonPath('rol', 'cajero');
 });
 
-// ------------------------------------------------------------------ Cobro en caja
-
 it('el cajero cobra una comanda: la cierra, registra el pago y libera la mesa', function () {
     $mesero = usuarioConRol('mesero');
     $mesa = mesaLibreFront(1);
@@ -103,14 +96,13 @@ it('el cajero cobra una comanda: la cierra, registra el pago y libera la mesa', 
         ->assertJsonPath('data.estado.codigo', 'cerrada')
         ->assertJsonPath('data.metodo_pago.codigo', 'efectivo');
 
-    // JSON no distingue 10000 de 10000.0: se compara como número.
     expect((float) $respuesta->json('data.total'))->toBe(10000.0);
     expect($mesa->refresh()->estado->codigo)->toBe('libre');
 });
 
 it('al cobrar se aplica el descuento del 10 % cuando el subtotal llega al umbral', function () {
     $mesero = usuarioConRol('mesero');
-    $comanda = comandaConProductoFront($mesero, mesaLibreFront(2), cantidad: 4); // 4 × 5000 = 20000
+    $comanda = comandaConProductoFront($mesero, mesaLibreFront(2), cantidad: 4);
     $tarjeta = MetodoPago::where('codigo', 'tarjeta')->first();
 
     Sanctum::actingAs(usuarioConRol('cajero'));
@@ -143,8 +135,6 @@ it('cobrar exige método de pago válido', function () {
     $this->postJson("/api/comandas/{$comanda->id}/cobrar", [])->assertStatus(422);
     $this->postJson("/api/comandas/{$comanda->id}/cobrar", ['metodo_pago_id' => 9999])->assertStatus(422);
 });
-
-// ------------------------------------------------------------------ Datos del salón
 
 it('el listado de comandas de un mesero solo incluye las suyas', function () {
     $ana = usuarioConRol('mesero');

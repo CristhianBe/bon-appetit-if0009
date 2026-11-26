@@ -14,21 +14,12 @@ class ProductoController extends Controller
 {
     public function __construct(private ProductoService $productoService) {}
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $productos = $this->productoService->listar(
             $request->only(['categoria', 'solo_disponibles', 'q', 'ordenar_por', 'direccion', 'por_pagina'])
         );
 
-        // OJO: $productos->load('categoria') (sin lo de abajo) rompe la paginación. El
-        // paginador no tiene load() propio, así que Laravel reenvía la llamada a la Collection
-        // interna (AbstractPaginator::__call) y ESA es la que se devuelve — no el paginador.
-        // El resultado: se pierden meta/links en la respuesta JSON. Por eso acá se llama
-        // load() aparte (por su efecto, no por su valor de retorno) y se le pasa el
-        // paginador original, intacto, a ::collection().
         if ($productos instanceof \Illuminate\Pagination\LengthAwarePaginator) {
             $productos->getCollection()->load('categoria');
         } elseif ($productos instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -38,9 +29,6 @@ class ProductoController extends Controller
         return ProductoResource::collection($productos);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(ProductoStoreRequest $request)
     {
         $producto = $this->productoService->crear($request->validated());
@@ -51,17 +39,11 @@ class ProductoController extends Controller
             ->header('Location', route('productos.show', $producto));
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Producto $producto)
     {
         return ProductoResource::make($producto->load('categoria'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(ProductoUpdateRequest $request, Producto $producto)
     {
         $producto = $this->productoService->actualizar($producto, $request->validated());
@@ -69,9 +51,6 @@ class ProductoController extends Controller
         return ProductoResource::make($producto->load('categoria'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Producto $producto)
     {
         $this->productoService->eliminar($producto);

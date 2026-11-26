@@ -19,9 +19,6 @@ beforeEach(function () {
     $this->categoria = Categoria::create(['nombre' => 'Platos fuertes']);
     $this->mesero = usuarioConRol('mesero');
 
-    // Estas pruebas verifican códigos/estructura de la API (no autorización por rol: eso vive
-    // en ComandaAutorizacionTest.php), así que el actor autenticado es un administrador, que
-    // puede hacer cualquier operación sin que la política de por-medio interfiera.
     Sanctum::actingAs(usuarioConRol('administrador'));
 });
 
@@ -62,7 +59,6 @@ test('agrega detalle, cierra la comanda con descuento y libera la mesa', functio
         'user_id' => $this->mesero->id,
     ])->json('data');
 
-    // 4 unidades x 5200 = 20800, supera el umbral de 15000 -> 10% de descuento
     $this->postJson("/api/comandas/{$comanda['id']}/detalles", [
         'producto_id' => $producto->id,
         'cantidad' => 4,
@@ -87,9 +83,6 @@ test('actualiza una comanda a un estado distinto de "cerrada" a traves del servi
         'user_id' => $this->mesero->id,
     ])->json('data');
 
-    // Cambiar la mesa de una comanda abierta no pasa por cerrar(): ejercita
-    // ComandaService::actualizar(), el camino "cualquier otro cambio" que antes se resolvia
-    // directo en el controlador sin pasar por el servicio.
     $actualizada = $this->putJson("/api/comandas/{$comanda['id']}", [
         'mesa_id' => $mesaDestino->id,
     ])->assertOk()->json('data');

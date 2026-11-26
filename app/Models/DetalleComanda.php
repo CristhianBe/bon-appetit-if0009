@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetalleComanda extends Model
 {
-    /** @use HasFactory<\Database\Factories\DetalleComandaFactory> */
     use HasFactory;
 
     protected $fillable = ['comanda_id', 'producto_id', 'cantidad', 'precio_unitario', 'notas'];

@@ -12,9 +12,6 @@ use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
-// Estas pruebas verifican códigos/estructura del CRUD de categorías y productos (no
-// autorización por rol), así que el actor es un administrador: puede hacer cualquier
-// operación sin que ninguna política interfiera.
 beforeEach(fn () => Sanctum::actingAs(usuarioConRol('administrador')));
 
 test('lista, crea, muestra y actualiza categorias por la api', function () {
@@ -68,8 +65,6 @@ test('crea, filtra y elimina productos por la api', function () {
         'categoria_id' => $categoria->id,
     ])->assertCreated()->json('data');
 
-    // ->load('categoria') sobre el paginador reventaba meta/links (ver ProductoController) -
-    // se dejan estas aserciones para que, si vuelve a pasar, la prueba lo detecte enseguida.
     $this->getJson('/api/productos?q=Ceviche')
         ->assertOk()
         ->assertJsonPath('data.0.nombre', 'Ceviche')

@@ -12,7 +12,6 @@ class Reserva extends Model
 
     public const ESTADOS = ['pendiente', 'confirmada', 'cumplida', 'cancelada'];
 
-    /** Estados que ocupan la mesa: una reserva cancelada o ya cumplida no bloquea el horario. */
     public const ESTADOS_ACTIVOS = ['pendiente', 'confirmada'];
 
     protected $fillable = [

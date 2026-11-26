@@ -13,14 +13,10 @@ use Illuminate\Http\Response;
 
 class MesaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $porPagina = max(min((int) $request->query('por_pagina', 15), 100), 1);
 
-        // comandaActiva: quién atiende cada mesa ocupada y cuánto lleva consumido (para el salón).
         $mesas = Mesa::with(['estado', 'comandaActiva.mesero', 'comandaActiva.estadoComanda', 'comandaActiva.detalles'])
             ->orderBy('numero')
             ->paginate($porPagina);
@@ -28,13 +24,9 @@ class MesaController extends Controller
         return MesaResource::collection($mesas);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(MesaStoreRequest $request)
     {
         $datos = $request->validated();
-        // Si no se indica estado inicial, la mesa nace libre.
         $datos['estado_mesa_id'] ??= EstadoMesa::where('codigo', 'libre')->value('id');
 
         $mesa = Mesa::create($datos);
@@ -45,17 +37,11 @@ class MesaController extends Controller
             ->header('Location', route('mesas.show', $mesa));
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Mesa $mesa)
     {
         return MesaResource::make($mesa->load('estado'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(MesaUpdateRequest $request, Mesa $mesa)
     {
         $mesa->update($request->validated());
@@ -63,9 +49,6 @@ class MesaController extends Controller
         return MesaResource::make($mesa->refresh()->load('estado'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Mesa $mesa)
     {
         if ($mesa->comandas()->exists()) {

@@ -6,22 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        // spatie/laravel-permission solo trae "name" y "guard_name" en su tabla roles;
-        // "descripcion" es un campo propio de este proyecto (ya existía antes de usar el
-        // paquete), así que se agrega encima de su migración oficial.
         Schema::table('roles', function (Blueprint $table) {
             $table->string('descripcion', 255)->nullable()->after('name');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('roles', function (Blueprint $table) {

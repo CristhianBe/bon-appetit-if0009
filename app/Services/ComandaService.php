@@ -22,11 +22,6 @@ class ComandaService
 
     private const TAMANO_PAGINA_MAXIMO = 50;
 
-    /**
-     * $actor es opcional para no romper a quien ya llamaba sin él. Cuando se pasa y es un
-     * mesero, la lista se limita a SUS comandas: coincide con ComandaPolicy::view(), así el
-     * listado no muestra comandas que luego darían 403 al abrirlas. Administrador y cajero ven todas.
-     */
     public function listar(array $filtros, ?User $actor = null): LengthAwarePaginator
     {
         $query = Comanda::with(['mesa.estado', 'mesero', 'estadoComanda', 'metodoPago', 'detalles.producto']);
@@ -43,7 +38,6 @@ class ComandaService
             $query->where('estado_comanda_id', $filtros['estado_comanda_id']);
         }
 
-        // ?activas=1 → todo lo que no está cerrado (lo que el salón y la caja necesitan ver).
         if (! empty($filtros['activas'])) {
             $query->whereHas('estadoComanda', fn ($q) => $q->where('codigo', '!=', 'cerrada'));
         }
@@ -54,24 +48,10 @@ class ComandaService
         return $query->latest('id')->paginate($porPagina);
     }
 
-    /**
-     * $actor es el usuario autenticado que hace la petición. El controlador YA revisó el
-     * permiso una vez (Capa 1, con $this->authorize()); acá se vuelve a revisar (Capa 2) para
-     * que la regla se cumpla también si algo más —una consola, un job en cola, otro
-     * controlador— llama a este servicio directamente sin pasar por la ruta protegida. Es el
-     * mismo principio de "defensa en profundidad" que exige el Laboratorio 6.
-     */
     public function abrir(array $datos, User $actor): Comanda
     {
-        // Gate::forUser($actor)->authorize(...) ejecuta ComandaPolicy::create($actor) por
-        // debajo. Si devuelve false, lanza AuthorizationException (Laravel la convierte sola
-        // en HTTP 403).
         Gate::forUser($actor)->authorize('create', Comanda::class);
 
-        // Un mesero solo puede abrir comandas a su propio nombre: sin esto, cualquier mesero
-        // autenticado podría mandar el user_id de OTRO mesero en el body y "regalarle" (o
-        // robarle) comandas. El administrador sí puede abrir a nombre de cualquiera (ej. para
-        // corregir un dato mal cargado).
         if (! $actor->hasRole('administrador')) {
             $datos['user_id'] = $actor->id;
         }
@@ -152,13 +132,6 @@ class ComandaService
         return $detalle->refresh();
     }
 
-    /**
-     * Punto único de entrada para PUT/PATCH /comandas/{comanda}. Antes esta decisión (si el
-     * cambio de estado es a "cerrada" o no) vivía en el controlador, que en el caso "no
-     * cerrada" hacía $comanda->update($datos) directo — eso permitía saltarse cualquier regla
-     * de negocio futura sobre mesa_id/estado, y además duplicaba lógica que debería estar
-     * acá. Ahora todo cambio de comanda pasa por el servicio, sin excepción.
-     */
     public function actualizar(Comanda $comanda, array $datos, User $actor): Comanda
     {
         Gate::forUser($actor)->authorize('update', $comanda);
@@ -178,18 +151,11 @@ class ComandaService
 
     public function cerrar(Comanda $comanda, User $actor): Comanda
     {
-        // Cerrar es una forma de "editar" la comanda (cambia su estado), así que usa el mismo
-        // permiso que update(): administrador, o el mesero dueño.
         Gate::forUser($actor)->authorize('update', $comanda);
 
         return $this->finalizar($comanda, null);
     }
 
-    /**
-     * Cobro en caja. A diferencia de cerrar() —que es "editar la comanda"—, cobrar es el
-     * trabajo del cajero: lo permite ComandaPolicy::cobrar() (administrador o cajero) y exige
-     * indicar con qué método pagó el cliente. Cierra la comanda y libera la mesa.
-     */
     public function cobrar(Comanda $comanda, int $metodoPagoId, User $actor): Comanda
     {
         Gate::forUser($actor)->authorize('cobrar', $comanda);
@@ -205,13 +171,6 @@ class ComandaService
         return $this->finalizar($comanda, $metodoPagoId);
     }
 
-    /**
-     * Regla de precios en UN solo lugar (la usan el cierre, el cobro y la API al mostrar la
-     * comanda): subtotal = Σ cantidad × precio; si llega al umbral, 10 % de descuento.
-     *
-     * @param  iterable<DetalleComanda>  $detalles
-     * @return array{subtotal: float, descuento: float, total: float}
-     */
     public static function calcularTotales(iterable $detalles): array
     {
         $subtotal = 0.0;
@@ -278,8 +237,6 @@ class ComandaService
         Gate::forUser($actor)->authorize('delete', $comanda);
 
         DB::transaction(function () use ($comanda) {
-            // Cancelar una comanda que sigue abierta debe devolver la mesa al salón;
-            // si no, la mesa quedaría "ocupada" para siempre sin ninguna comanda.
             if ($comanda->estadoComanda->codigo !== 'cerrada') {
                 $estadoLibre = EstadoMesa::where('codigo', 'libre')->firstOrFail();
                 $comanda->mesa->update(['estado_mesa_id' => $estadoLibre->id]);

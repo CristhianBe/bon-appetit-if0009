@@ -12,7 +12,7 @@ test('responde 400 cuando el body no es JSON valido', function () {
         'POST',
         '/api/categorias',
         server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'],
-        content: '{"nombre": "Bebidas"' // llave sin cerrar: JSON invalido a proposito
+        content: '{"nombre": "Bebidas"'
     );
 
     $respuesta->assertStatus(400)->assertJsonPath('codigo', 'solicitud_invalida');

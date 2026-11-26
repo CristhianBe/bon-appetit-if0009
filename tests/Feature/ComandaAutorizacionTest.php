@@ -12,14 +12,6 @@ use Illuminate\Support\Facades\Gate;
 
 uses(RefreshDatabase::class);
 
-// Estas pruebas ejercitan ComandaService DIRECTAMENTE (sin pasar por una ruta HTTP ni por
-// ComandaController), a propósito: el Laboratorio 6 exige demostrar que la Capa 2 de
-// autorización (la que vive DENTRO del servicio, ver Gate::forUser($actor)->authorize(...) en
-// app/Services/ComandaService.php) rechaza igual aunque nadie pase por la Capa 1 del
-// controlador. Si solo hubiéramos protegido la ruta, cualquier otro código del proyecto (una
-// consola, un job en cola) podría llamar al servicio y saltarse la regla — acá comprobamos
-// que NO puede.
-
 beforeEach(fn () => $this->seed(CatalogosSeeder::class));
 
 function mesaLibre(int $numero): Mesa
@@ -46,7 +38,7 @@ it('un mesero puede ver su propia comanda', function () {
 
     Gate::forUser($mesero)->authorize('view', $comanda);
 
-    expect(true)->toBeTrue(); // no lanzó AuthorizationException
+    expect(true)->toBeTrue();
 });
 
 it('un mesero NO puede ver la comanda de otro mesero', function () {
@@ -101,9 +93,6 @@ it('abrir() asigna como dueño al mesero autenticado, ignorando el user_id que v
     $mesero = usuarioConRol('mesero');
     $otroMesero = usuarioConRol('mesero');
 
-    // A propósito se manda el id de OTRO mesero en el body: ComandaService::abrir() debe
-    // ignorarlo y usar siempre al actor autenticado, para que un mesero no pueda abrir
-    // comandas a nombre de otro.
     $comanda = app(ComandaService::class)->abrir([
         'mesa_id' => mesaLibre(8)->id,
         'user_id' => $otroMesero->id,
@@ -113,9 +102,6 @@ it('abrir() asigna como dueño al mesero autenticado, ignorando el user_id que v
 });
 
 it('un usuario sin ningún rol asignado no puede ver ninguna comanda (caso límite: cero roles)', function () {
-    // usuarioConRol() no se usa acá a propósito: este usuario no tiene NINGÚN rol en
-    // model_has_roles, que es distinto de "tener un rol sin permiso" — es el caso límite de
-    // la cuenta recién registrada a la que todavía no se le asignó ningún rol.
     $sinRol = User::factory()->create();
     $mesero = usuarioConRol('mesero');
     $comanda = app(ComandaService::class)->abrir(['mesa_id' => mesaLibre(9)->id, 'user_id' => $mesero->id], $mesero);

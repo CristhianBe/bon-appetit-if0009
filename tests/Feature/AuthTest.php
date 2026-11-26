@@ -16,8 +16,6 @@ it('registra una cuenta nueva y responde 201 sin token', function () {
         'password_confirmation' => 'ClaveSegura#2026',
     ]);
 
-    // 201, no 200: se creó un recurso (la cuenta), no se inició sesión. Registrarse y
-    // loguearse son dos pasos distintos a propósito (ver AuthController::register).
     $response->assertCreated()->assertJsonStructure(['user' => ['id', 'name', 'email']]);
     $response->assertJsonMissing(['token']);
     expect(User::where('email', 'nueva@bonappetit.test')->exists())->toBeTrue();
@@ -85,7 +83,7 @@ it('el token de login tiene fecha de expiración y capacidades asignadas', funct
 
     expect($tokenGuardado->expires_at)->not->toBeNull();
     expect($tokenGuardado->expires_at->isFuture())->toBeTrue();
-    expect($tokenGuardado->abilities)->toContain('comandas:escribir'); // mesero puede escribir
+    expect($tokenGuardado->abilities)->toContain('comandas:escribir');
 });
 
 it('un token expirado ya no sirve para autenticarse: 401', function () {
@@ -105,11 +103,6 @@ it('logout revoca el token: usarlo después responde 401', function () {
         ->postJson('/api/logout')
         ->assertNoContent();
 
-    // El guard de autenticación cachea el usuario ya resuelto mientras dure la aplicación. En
-    // una petición HTTP real esto no pasa (cada petición arranca una aplicación nueva), pero
-    // dentro de UN mismo test, dos llamadas seguidas comparten la misma aplicación — sin este
-    // forgetGuards(), la segunda llamada de abajo seguiría "recordando" al usuario de la
-    // primera en vez de volver a validar el token (ya borrado) contra la base de datos.
     $this->app['auth']->forgetGuards();
 
     $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)

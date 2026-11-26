@@ -14,9 +14,6 @@ class CategoriaController extends Controller
 {
     public function __construct(private CategoriaService $categoriaService) {}
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $categorias = $this->categoriaService->listar($request->only(['q', 'por_pagina']));
@@ -24,9 +21,6 @@ class CategoriaController extends Controller
         return CategoriaResource::collection($categorias);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CategoriaStoreRequest $request)
     {
         $categoria = $this->categoriaService->crear($request->validated());
@@ -37,17 +31,11 @@ class CategoriaController extends Controller
             ->header('Location', route('categorias.show', $categoria));
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Categoria $category)
     {
         return CategoriaResource::make($category->load('productos'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(CategoriaUpdateRequest $request, Categoria $category)
     {
         $categoria = $this->categoriaService->actualizar($category, $request->validated());
@@ -55,9 +43,6 @@ class CategoriaController extends Controller
         return CategoriaResource::make($categoria);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Categoria $category)
     {
         $this->categoriaService->eliminar($category);

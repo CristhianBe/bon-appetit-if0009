@@ -17,9 +17,6 @@ class UserStoreRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            // Antes era "rol_id" (integer, exists:roles,id); ahora el rol se identifica por
-            // NOMBRE, porque así es como spatie/laravel-permission los busca
-            // ($user->assignRole('mesero')), no por id.
             'rol' => ['nullable', 'string', 'exists:roles,name'],
         ];
     }

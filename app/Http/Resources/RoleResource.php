@@ -11,9 +11,6 @@ class RoleResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            // El contrato externo de la API sigue usando "nombre" (no se cambia para quien ya
-            // consume este endpoint), aunque por dentro spatie/laravel-permission guarda la
-            // columna como "name" (así es como el paquete identifica los roles internamente).
             'nombre' => $this->name,
             'descripcion' => $this->descripcion,
         ];

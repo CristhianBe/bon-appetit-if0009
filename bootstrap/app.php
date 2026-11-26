@@ -20,17 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Lab 14: la app corre detrás del proxy HTTPS de la plataforma de hospedaje.
-        // Confiar en sus encabezados X-Forwarded-* para que las URLs y assets salgan en https.
         $middleware->trustProxies(at: '*');
 
-        // Corre antes que cualquier FormRequest, para que un JSON mal formado en el body
-        // responda 400 en vez de terminar fallando la validación normal con 422.
         $middleware->api(prepend: [
             \App\Http\Middleware\ValidarJsonMiddleware::class,
         ]);
 
-        // Atajo para proteger rutas por rol: ->middleware('rol:administrador').
         $middleware->alias([
             'rol' => \App\Http\Middleware\RequiereRol::class,
         ]);
@@ -40,12 +35,6 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
-        // Punto único de traducción excepción -> código HTTP (Lab 5). Cada
-        // familia de excepción se traduce en un solo lugar, así ningún
-        // controlador necesita un try/catch propio ni deja pasar una traza
-        // de pila en la respuesta.
-
-        // Regla de negocio violada (Lab 4) -> 409, con el código propio de la regla.
         $exceptions->render(function (ReglaNegocioException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
@@ -55,8 +44,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Recurso inexistente (model binding o findOrFail) -> 404 limpio,
-        // sin el mensaje interno de Eloquent ni la traza.
         $exceptions->render(function (ModelNotFoundException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
@@ -75,8 +62,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Sin autenticar -> 401. No indica si la cuenta existe o no, para no
-        // permitir enumerar usuarios.
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
@@ -86,7 +71,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Autenticado pero sin permiso sobre el recurso -> 403.
         $exceptions->render(function (AuthorizationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
@@ -96,9 +80,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Validación fallida -> 422 con el detalle por campo (Laravel ya lo
-        // arma así; se deja explícito para que el formato quede documentado
-        // y no dependa del comportamiento implícito del framework).
         $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
@@ -109,7 +90,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Solicitud mal formada (ej. JSON inválido en el body) -> 400.
         $exceptions->render(function (BadRequestHttpException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([

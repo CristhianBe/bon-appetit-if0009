@@ -10,10 +10,6 @@ use App\Services\ReservaService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-/**
- * Reservaciones. Quién puede qué se decide en routes/api.php con el middleware "rol":
- * leer = cualquier usuario con sesión; crear/editar = administrador o mesero; borrar = administrador.
- */
 class ReservaController extends Controller
 {
     public function __construct(private ReservaService $reservaService) {}

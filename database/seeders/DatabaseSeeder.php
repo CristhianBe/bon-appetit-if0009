@@ -13,9 +13,6 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
        $this->call([
@@ -27,9 +24,6 @@ class DatabaseSeeder extends Seeder
             MesaSeeder::class,
         ]);
 
-        // Historial de ventas: comandas ya cobradas (cerradas, con método de pago), atendidas por
-        // el mesero o el administrador. Antes se creaban con estados al azar y sin ocupar la mesa,
-        // lo que en el panel real se veía como mesas libres con comandas abiertas.
         $cerrada = EstadoComanda::where('codigo', 'cerrada')->value('id');
         $personal = User::role(['administrador', 'mesero'])->pluck('id');
 
@@ -43,6 +37,5 @@ class DatabaseSeeder extends Seeder
                 'cerrada_en' => now()->subHours(fake()->numberBetween(1, 72)),
             ])
             ->create();
-
     }
 }

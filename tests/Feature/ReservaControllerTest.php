@@ -66,7 +66,6 @@ it('rechaza una reserva que choca con otra en la misma mesa (409)', function () 
         ->assertStatus(409)
         ->assertJsonPath('codigo', 'reserva_solapada');
 
-    // Dos horas después de distancia ya no choca.
     $this->postJson('/api/reservas', array_merge($this->datos, ['nombre' => 'Otro', 'hora' => '21:00']))
         ->assertCreated();
 });

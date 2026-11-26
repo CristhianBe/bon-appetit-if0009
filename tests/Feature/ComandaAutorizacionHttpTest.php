@@ -10,10 +10,6 @@ use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
-// A diferencia de ComandaAutorizacionTest.php (que prueba el servicio directo), este archivo
-// prueba específicamente el "acceso permitido/denegado por rol" pegándole a las rutas reales
-// (routes/api.php), para comprobar que la Capa 1 (ComandaController) también hace su parte.
-
 beforeEach(fn () => $this->seed(CatalogosSeeder::class));
 
 function crearMesaLibreHttp(int $numero): Mesa
@@ -76,7 +72,6 @@ it('un usuario autenticado sin ningún rol recibe 403 al ver una comanda', funct
     $mesero = usuarioConRol('mesero');
     $comanda = app(ComandaService::class)->abrir(['mesa_id' => crearMesaLibreHttp(106)->id, 'user_id' => $mesero->id], $mesero);
 
-    // Sin usuarioConRol(): usuario válido (token real), pero sin fila en model_has_roles.
     Sanctum::actingAs(User::factory()->create());
 
     $this->getJson("/api/comandas/{$comanda->id}")->assertStatus(403);

@@ -17,9 +17,6 @@ class ComandaController extends Controller
 
     public function __construct(private ComandaService $comandaService) {}
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', Comanda::class);
@@ -32,12 +29,8 @@ class ComandaController extends Controller
         return ComandaResource::collection($comandas);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(ComandaStoreRequest $request)
     {
-        // Capa 1: ¿el rol de quien pide puede abrir comandas en general? (cajero no).
         $this->authorize('create', Comanda::class);
 
         $comanda = $this->comandaService->abrir($request->validated(), $request->user());
@@ -48,25 +41,13 @@ class ComandaController extends Controller
             ->header('Location', route('comandas.show', $comanda));
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Comanda $comanda, Request $request)
     {
-        // Acá nace el 403 "si no le corresponde": si ComandaPolicy::view() da false, esta
-        // línea lanza AuthorizationException y Laravel responde 403 solo.
         $this->authorize('view', $comanda);
 
         return ComandaResource::make($comanda->load(self::RELACIONES));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * Toda la decisión de qué hacer con el cambio (si es cierre, va por
-     * ComandaService::cerrar(); cualquier otro cambio, por
-     * ComandaService::actualizar()) vive en el servicio, no acá.
-     */
     public function update(ComandaUpdateRequest $request, Comanda $comanda)
     {
         $this->authorize('update', $comanda);
@@ -76,9 +57,6 @@ class ComandaController extends Controller
         return ComandaResource::make($comanda->load(self::RELACIONES));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Comanda $comanda, Request $request)
     {
         $this->authorize('delete', $comanda);
@@ -88,10 +66,6 @@ class ComandaController extends Controller
         return response()->noContent();
     }
 
-    /**
-     * Cobro en caja: POST /api/comandas/{comanda}/cobrar  { "metodo_pago_id": 1 }
-     * Cierra la comanda, registra cómo pagó el cliente y libera la mesa.
-     */
     public function cobrar(CobrarComandaRequest $request, Comanda $comanda)
     {
         $this->authorize('cobrar', $comanda);

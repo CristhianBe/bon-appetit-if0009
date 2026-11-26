@@ -28,10 +28,6 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
-    /*
-    | Contraseña de las cuentas demo cuando se siembran fuera de local/testing
-    | (ver database/seeders/UserSeeder.php). Si no se define, se genera una aleatoria.
-    */
     'seed_demo_password' => env('SEED_DEMO_PASSWORD'),
 
     /*

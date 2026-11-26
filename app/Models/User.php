@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -16,19 +15,8 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
-    // HasRoles (spatie/laravel-permission) reemplaza la relación "rol()" (belongsTo, un solo
-    // rol vía rol_id) que tenía este modelo antes: ahora trae $user->roles(), $user->hasRole(),
-    // $user->assignRole(), $user->syncRoles(), etc. El negocio sigue siendo "un rol por usuario"
-    // (ver UserController), pero la tabla ya soporta más de uno si hiciera falta más adelante.
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [

@@ -16,10 +16,6 @@ beforeEach(function () {
     $this->seed(CatalogosSeeder::class);
 
     $this->categoria = Categoria::create(['nombre' => 'Platos fuertes']);
-    // Estas pruebas verifican REGLAS DE NEGOCIO, no autorización (eso vive en
-    // ComandaAutorizacionTest.php): por eso el actor es directamente el mesero dueño de la
-    // comanda, con el rol asignado — así cualquier rechazo que veamos viene 100% de la regla
-    // que se está probando, no de un 403 disfrazado.
     $this->mesero = usuarioConRol('mesero');
 
     $this->comandaService = app(ComandaService::class);
@@ -78,7 +74,6 @@ test('se aplica un descuento del 10% cuando el total supera el umbral', function
         'user_id' => $this->mesero->id,
     ], $this->mesero);
 
-    // 4 unidades x 5200 = 20800, supera el umbral de 15000
     $this->comandaService->agregarDetalle($comanda, [
         'producto_id' => $producto->id,
         'cantidad' => 4,

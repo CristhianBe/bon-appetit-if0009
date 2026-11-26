@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
-// Valida el body de POST /api/register (crear una cuenta nueva).
 class RegistrarUsuarioRequest extends FormRequest
 {
     public function authorize(): bool
@@ -13,17 +12,11 @@ class RegistrarUsuarioRequest extends FormRequest
         return true;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            // Password::min(12)... es la política mínima de complejidad que pide el
-            // Laboratorio 6: mínimo 12 caracteres, con mayúsculas, minúsculas, números y
-            // símbolos.
             'password' => [
                 'required', 'confirmed',
                 Password::min(12)->letters()->mixedCase()->numbers()->symbols(),

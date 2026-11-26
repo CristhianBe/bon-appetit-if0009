@@ -18,16 +18,11 @@ public function estado(): BelongsTo
     return $this->belongsTo(EstadoMesa::class, 'estado_mesa_id');
 }
 
-
 public function comandas(): HasMany
 {
     return $this->hasMany(Comanda::class);
 }
 
-/**
- * La comanda que hoy está "viva" en la mesa (cualquiera que no esté cerrada).
- * Sirve para que el salón muestre quién atiende y cuánto lleva consumido.
- */
 public function comandaActiva(): HasOne
 {
     return $this->hasOne(Comanda::class)

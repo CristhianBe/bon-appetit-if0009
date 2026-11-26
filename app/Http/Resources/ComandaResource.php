@@ -18,8 +18,6 @@ class ComandaResource extends JsonResource
             'metodo_pago_id'    => $this->metodo_pago_id,
             'total'             => (float) $this->total,
             'personas'          => $this->personas,
-            // Mientras la comanda está abierta 'total' vale 0; estos tres salen de los detalles
-            // con la misma regla que usa el cierre (ComandaService::calcularTotales).
             'subtotal'          => $this->whenLoaded('detalles', fn () => ComandaService::calcularTotales($this->detalles)['subtotal']),
             'descuento'         => $this->whenLoaded('detalles', fn () => ComandaService::calcularTotales($this->detalles)['descuento']),
             'total_calculado'   => $this->whenLoaded('detalles', fn () => ComandaService::calcularTotales($this->detalles)['total']),
