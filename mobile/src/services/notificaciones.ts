@@ -46,6 +46,9 @@ export async function notificarProductoGuardado(nombre: string, esNuevo: boolean
         id: Math.floor(Date.now() % 2147483647),
         title: esNuevo ? 'Producto creado' : 'Producto actualizado',
         body: `"${nombre}" se guardó correctamente en el menú.`,
+        // Aviso inmediato: no necesita alarma exacta. Con el valor por defecto (true) Android 12+
+        // abría la pantalla "Alarmas y recordatorios" cada vez que se guardaba un producto.
+        isExactNotification: false,
       },
     ],
   });
