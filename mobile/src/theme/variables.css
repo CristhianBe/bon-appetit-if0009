@@ -91,7 +91,8 @@ ion-button { --border-radius: 8px; font-weight: 600; text-transform: none; lette
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   background: #ffffff;
   border-top: 1px solid var(--ba-borde);
   padding: 6px 4px calc(6px + var(--ion-safe-area-bottom, 0px));

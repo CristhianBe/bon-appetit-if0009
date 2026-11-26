@@ -46,24 +46,29 @@ import {
   IonApp, IonRouterOutlet, IonTitle, IonToolbar, IonHeader,
   IonContent, IonMenu, IonMenuToggle, IonList, IonItem, IonLabel, IonIcon,
 } from '@ionic/vue';
-import { gridOutline, receiptOutline, restaurantOutline } from 'ionicons/icons';
+import { gridOutline, receiptOutline, restaurantOutline, settingsOutline } from 'ionicons/icons';
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { rolActual, type Rol } from '@/services/sesion';
 
 const router = useRouter();
 const route = useRoute();
 
-const secciones = [
+const TODAS_LAS_SECCIONES: Array<{ ruta: string; texto: string; corto: string; icono: string; roles?: Rol[] }> = [
   { ruta: 'mesas', texto: 'Mesas', corto: 'Mesas', icono: gridOutline },
   { ruta: 'comandas', texto: 'Comandas', corto: 'Comandas', icono: receiptOutline },
   { ruta: 'productos', texto: 'Menú y catálogo', corto: 'Menú', icono: restaurantOutline },
+  // Solo el administrador ve la gestión de categorías y usuarios (la API también lo exige).
+  { ruta: 'administracion', texto: 'Administración', corto: 'Admin', icono: settingsOutline, roles: ['administrador'] },
 ];
 
+const secciones = computed(() => TODAS_LAS_SECCIONES.filter((s) => !s.roles || (rolActual.value && s.roles.includes(rolActual.value))));
+
 /** Pantallas "raíz": atrás desde acá cierra la app en vez de navegar. */
-const RUTAS_RAIZ = ['login', ...secciones.map((s) => s.ruta)];
+const RUTAS_RAIZ = ['login', ...TODAS_LAS_SECCIONES.map((s) => s.ruta)];
 
 const rutaActual = computed(() => String(route.name ?? ''));
-const mostrarBarra = computed(() => secciones.some((s) => s.ruta === rutaActual.value));
+const mostrarBarra = computed(() => secciones.value.some((s) => s.ruta === rutaActual.value));
 
 // Con la barra visible, el contenido y el botón flotante dejan espacio abajo (ver variables.css).
 watch(mostrarBarra, (visible) => document.body.classList.toggle('con-barra', visible), { immediate: true });

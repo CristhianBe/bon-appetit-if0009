@@ -50,11 +50,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ProductoFormPage.vue'),
     props: (ruta) => ({ id: Number(ruta.params.id) }),
   },
-  { path: '/:pathMatch(.*)*', redirect: '/mesas' },
   {
-  path: '/administracion',
-  name: 'Administracion',
-  component: () => import('@/views/administracion.vue')},
+    path: '/administracion',
+    name: 'administracion',
+    component: () => import('@/views/administracion.vue'),
+  },
+  { path: '/:pathMatch(.*)*', redirect: '/mesas' },
 ];
 
 const router = createRouter({

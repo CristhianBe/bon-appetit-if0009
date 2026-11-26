@@ -95,7 +95,8 @@
         <ion-infinite-scroll-content loading-spinner="crescent" loading-text="Cargando más productos..." />
       </ion-infinite-scroll>
 
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <!-- Crear platillos es solo del administrador (la API responde 403 al resto). -->
+      <ion-fab v-if="esAdmin" slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button aria-label="Nuevo producto" @click="router.push({ name: 'producto-nuevo' })">
           <ion-icon :icon="add" />
         </ion-fab-button>
@@ -150,7 +151,9 @@ import { logout } from '@/services/authApi';
 import { guardarCacheProductos, hayConexion, leerCacheProductos } from '@/services/cacheProductos';
 import { normalizarError, type ErrorNormalizado } from '@/services/errores';
 import { formatearPrecio, listadoDesactualizado, listarProductos, type Producto } from '@/services/productosApi';
-import { usuarioActual } from '@/services/sesion';
+import { tieneRol, usuarioActual } from '@/services/sesion';
+
+const esAdmin = computed(() => tieneRol('administrador'));
 
 const router = useRouter();
 

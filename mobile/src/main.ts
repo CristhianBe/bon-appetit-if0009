@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import { registrarManejadorNoAutenticado } from './services/http';
+import { completarRol } from './services/authApi';
 import { cargarSesion } from './services/sesion';
 
 /* CSS base de Ionic */
@@ -24,6 +25,7 @@ async function arrancar(): Promise<void> {
   // El token se lee del almacenamiento cifrado ANTES de la primera navegación, para que
   // el guardián del router ya sepa si hay sesión.
   await cargarSesion();
+  await completarRol();
 
   // 401 en cualquier llamada (token vencido o revocado): el interceptor ya borró la
   // sesión; acá se manda al login reemplazando la entrada actual del historial.

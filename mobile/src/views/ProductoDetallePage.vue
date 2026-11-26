@@ -6,7 +6,7 @@
           <ion-back-button default-href="/productos" text="" />
         </ion-buttons>
         <ion-title>Detalle</ion-title>
-        <ion-buttons v-if="producto && !actualizadoEnCache" slot="end">
+        <ion-buttons v-if="producto && !actualizadoEnCache && esAdmin" slot="end">
           <ion-button aria-label="Editar producto" @click="editar">
             <ion-icon slot="icon-only" :icon="createOutline" />
           </ion-button>
@@ -83,7 +83,7 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-button v-if="!actualizadoEnCache" expand="block" @click="editar">
+          <ion-button v-if="!actualizadoEnCache && esAdmin" expand="block" @click="editar">
             <ion-icon slot="start" :icon="createOutline" />
             Editar producto
           </ion-button>
@@ -118,7 +118,7 @@ import {
   onIonViewWillEnter,
 } from '@ionic/vue';
 import { checkmarkCircleOutline, createOutline, pricetagOutline, searchOutline } from 'ionicons/icons';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AvisoDesactualizado from '@/components/AvisoDesactualizado.vue';
 import EstadoError from '@/components/EstadoError.vue';
@@ -126,6 +126,10 @@ import EstadoVacio from '@/components/EstadoVacio.vue';
 import { leerCacheProductos } from '@/services/cacheProductos';
 import { normalizarError, type ErrorNormalizado } from '@/services/errores';
 import { formatearPrecio, obtenerProducto, type Producto } from '@/services/productosApi';
+import { tieneRol } from '@/services/sesion';
+
+/** Editar el menú es solo del administrador (la API responde 403 al resto). */
+const esAdmin = computed(() => tieneRol('administrador'));
 
 const props = defineProps<{ id: number }>();
 

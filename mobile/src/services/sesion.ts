@@ -1,10 +1,14 @@
 import { computed, reactive } from 'vue';
 import { borrarSeguro, guardarSeguro, leerSeguro } from './almacenSeguro';
 
+export type Rol = 'administrador' | 'mesero' | 'cajero';
+
 export interface Usuario {
   id: number;
   name: string;
   email: string;
+  /** Viene en el login y en GET /api/user. Define qué ve y qué puede hacer cada persona. */
+  rol?: Rol | null;
 }
 
 interface SesionGuardada {
@@ -26,6 +30,18 @@ const estado = reactive<{ token: string | null; usuario: Usuario | null; expiraE
 });
 
 export const usuarioActual = computed(() => estado.usuario);
+export const rolActual = computed(() => estado.usuario?.rol ?? null);
+
+/** Comodidad visual para mostrar/ocultar acciones; la API vuelve a validar cada una. */
+export function tieneRol(...roles: Rol[]): boolean {
+  return !!rolActual.value && roles.includes(rolActual.value);
+}
+
+export const ETIQUETA_ROL: Record<Rol, string> = {
+  administrador: 'Administrador',
+  mesero: 'Mesero',
+  cajero: 'Cajero',
+};
 
 export function haySesionActiva(): boolean {
   return !!estado.token && !!estado.expiraEn && Date.now() < estado.expiraEn;
@@ -62,6 +78,14 @@ export async function iniciarSesion(token: string, usuario: Usuario): Promise<vo
   estado.token = sesion.token;
   estado.usuario = sesion.usuario;
   estado.expiraEn = sesion.expiraEn;
+}
+
+/** Actualiza los datos del usuario (por ejemplo, el rol) conservando el token vigente. */
+export async function actualizarUsuario(usuario: Usuario): Promise<void> {
+  if (!estado.token || !estado.expiraEn) return;
+  const sesion: SesionGuardada = { token: estado.token, usuario, expiraEn: estado.expiraEn };
+  await guardarSeguro(CLAVE_SESION, JSON.stringify(sesion));
+  estado.usuario = usuario;
 }
 
 export async function cerrarSesion(): Promise<void> {
