@@ -4,7 +4,6 @@ import { haySesionActiva } from '@/services/sesion';
 
 declare module 'vue-router' {
   interface RouteMeta {
-    /** true = accesible sin sesión. Todo lo demás exige un token vigente. */
     publica?: boolean;
   }
 }
@@ -33,7 +32,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ProductosPage.vue'),
   },
   {
-    // Va antes de /productos/:id para que "nuevo" no se interprete como un id.
     path: '/productos/nuevo',
     name: 'producto-nuevo',
     component: () => import('@/views/ProductoFormPage.vue'),
@@ -63,11 +61,6 @@ const router = createRouter({
   routes,
 });
 
-/**
- * Guardián global: sin sesión activa (token presente y no vencido) no se entra a
- * ninguna ruta privada. Con sesión, /login redirige al listado para que ni la
- * navegación ni el botón atrás devuelvan a la pantalla de login.
- */
 router.beforeEach((to) => {
   const conSesion = haySesionActiva();
 

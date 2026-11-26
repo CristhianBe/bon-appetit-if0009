@@ -13,7 +13,6 @@
         <section class="panel-card card-pad" aria-labelledby="nueva-reserva">
             <h2 class="section-title" id="nueva-reserva">Nueva reserva</h2>
 
-            {{-- El cajero solo consulta reservas: no ve el formulario. --}}
             <div data-roles="cajero" hidden>
                 <p class="section-sub">Tu rol (cajero) puede consultar las reservaciones, pero no registrarlas ni cambiarlas.</p>
             </div>
@@ -21,7 +20,6 @@
             <div data-roles="administrador,mesero" hidden>
                 <p class="section-sub">Registrá los datos del cliente para apartar una mesa.</p>
 
-                {{-- method="post": los datos personales nunca viajan en la URL. El envío lo maneja pages/reservas.js. --}}
                 <form method="post" action="#" data-form-reserva novalidate>
                     <div class="field">
                         <label for="nombre">Nombre completo</label>

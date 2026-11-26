@@ -1,12 +1,8 @@
 import { ApiClient } from './api/ApiClient.js';
 import { ApiError } from './api/ApiError.js';
 
-// Cliente "normal": sin token todavía (nadie ha iniciado sesión en esta página de prueba).
 const api = new ApiClient();
 
-// Cliente aparte, con un token inválido a propósito, solo para el panel 3
-// (demostrar el 401 y el evento de aviso). No se usa localStorage para no
-// pisar una sesión real que el navegador pueda tener guardada.
 const apiConTokenInvalido = new ApiClient({ getToken: () => 'token-que-no-existe' });
 
 function panel(id) {
@@ -42,7 +38,6 @@ function renderError(el, error) {
     }
 }
 
-// Panel 1: ejemplo EXITOSO — login con las credenciales demo del seeder.
 async function demoExito() {
     const el = panel('demo-exito');
     try {
@@ -56,8 +51,6 @@ async function demoExito() {
     }
 }
 
-// Panel 2: ejemplo de ERROR — login con datos inválidos, dispara un 422
-// con errores de validación por campo (ApiError.errors).
 async function demoError() {
     const el = panel('demo-error');
     try {
@@ -71,7 +64,6 @@ async function demoError() {
     }
 }
 
-// Panel 3: cancelación de solicitudes con AbortController.
 async function demoCancelacion() {
     const el = panel('demo-cancelacion');
     const controller = new AbortController();
@@ -87,9 +79,6 @@ async function demoCancelacion() {
     }
 }
 
-// Panel 4: 401 real — se usa un token inválido a propósito contra una ruta
-// protegida. ApiClient dispara ApiClient.UNAUTHORIZED_EVENT; este panel
-// solo escucha ese evento para probar que "avisa a la app".
 window.addEventListener(ApiClient.UNAUTHORIZED_EVENT, (event) => {
     const el = panel('demo-401-evento');
     el.innerHTML = `

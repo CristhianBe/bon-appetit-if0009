@@ -1,10 +1,3 @@
-/**
- * Pantalla de Reservaciones conectada a la API (/api/reservas).
- *   - administrador y mesero: registran, confirman y cancelan reservas.
- *   - cajero: solo consulta.
- *   - administrador: además puede eliminar una reserva.
- * El servidor valida capacidad de la mesa y choques de horario (409/422) y aquí se muestra su mensaje.
- */
 import {
     api, asegurarRol, avisar, confirmar, conBoton, escapar, etiquetaFecha, fechaIso, mensajeError,
     mostrarErrorForm, pintarCargando, pintarError, tieneRol, traerTodo,
@@ -22,8 +15,6 @@ const estado = { reservas: [], mesas: [], rango: 'todas', verCerradas: false };
 const $lista = document.querySelector('[data-lista-reservas]');
 const form = document.querySelector('[data-form-reserva]');
 const puedeGestionar = () => tieneRol('administrador', 'mesero');
-
-/* ------------------------------------------------------------------ Lista */
 
 function reservasVisibles() {
     const hoy = fechaIso();
@@ -99,8 +90,6 @@ async function cargar({ silencioso = false } = {}) {
     }
 }
 
-/* ------------------------------------------------------------------ Formulario */
-
 function pintarFormularioMesas() {
     if (!form) return;
     const zona = form.zona;
@@ -111,7 +100,6 @@ function pintarFormularioMesas() {
     actualizarMesasDelFormulario();
 }
 
-/** Lista solo las mesas donde caben los comensales y que son de la zona elegida. */
 function actualizarMesasDelFormulario() {
     const personas = Number(form.personas.value) || 1;
     const aptas = estado.mesas.filter((m) => m.capacidad >= personas && (!form.zona.value || m.zona === form.zona.value));
@@ -172,8 +160,6 @@ function iniciarFormulario() {
     });
 }
 
-/* ------------------------------------------------------------------ Acciones sobre una reserva */
-
 async function actualizar(id, cambios, mensaje) {
     await api.put(`/reservas/${id}`, cambios);
     await cargar({ silencioso: true });
@@ -226,8 +212,6 @@ $lista.addEventListener('change', async (e) => {
     }
 });
 
-/* ------------------------------------------------------------------ Filtros */
-
 document.querySelector('[data-grupo-rango]').addEventListener('click', (e) => {
     const chip = e.target.closest('[data-rango]');
     if (!chip) return;
@@ -240,8 +224,6 @@ document.querySelector('[data-ver-cerradas]').addEventListener('change', (e) => 
     estado.verCerradas = e.target.checked;
     pintarLista();
 });
-
-/* ------------------------------------------------------------------ Arranque */
 
 (async () => {
     await asegurarRol();

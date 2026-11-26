@@ -28,7 +28,6 @@
         </EstadoVacio>
 
         <template v-else>
-          <!-- Resumen -->
           <section class="resumen" aria-label="Resumen de comandas">
             <div class="dato"><span>Activas</span><strong>{{ todas.length }}</strong></div>
             <div class="dato"><span>En preparación</span><strong class="aviso">{{ cuenta('en_preparacion') }}</strong></div>
@@ -43,14 +42,12 @@
             </span>
           </div>
 
-          <!-- Filtro por estado -->
           <div class="chips" role="group" aria-label="Filtrar por estado">
             <button v-for="f in FILTROS" :key="f.valor" type="button" class="chip" :aria-pressed="filtro === f.valor" @click="filtro = f.valor">
               {{ f.texto }} ({{ f.valor ? cuenta(f.valor) : todas.length }})
             </button>
           </div>
 
-          <!-- Lista -->
           <article
             v-for="c in visibles"
             :key="c.id"
@@ -119,7 +116,6 @@
         </template>
       </div>
 
-      <!-- Selector de productos -->
       <ion-modal :is-open="selector.abierto" @did-dismiss="selector.abierto = false">
         <ion-header>
           <ion-toolbar color="primary">
@@ -240,7 +236,6 @@ async function cargar(): Promise<void> {
     if (listaMetodos) metodos.value = listaMetodos;
     error.value = null;
 
-    // Viene de "Ver comanda" en Mesas: se abre esa.
     const pedida = Number(route.query.abrir);
     if (pedida && todas.value.some((c) => c.id === pedida)) {
       filtro.value = '';
@@ -267,7 +262,6 @@ async function recargarUna(id: number): Promise<void> {
   if (i >= 0) todas.value[i] = comanda;
 }
 
-/** Ejecuta una acción contra la API mostrando el error del servidor si falla. */
 async function ejecutar(accion: () => Promise<void>): Promise<void> {
   ocupado.value = true;
   try {
@@ -323,7 +317,6 @@ function agregar(productoId: number): Promise<void> {
     const c = comandaSelector.value;
     if (!c) return;
     const nota = selector.nota.trim();
-    // Mismo producto sin nota: se suma a la línea existente en vez de duplicarla.
     const existente = !nota ? c.detalles?.find((d) => d.producto_id === productoId && !d.notas) : undefined;
     if (existente) await cambiarCantidad(existente.id, existente.cantidad + 1);
     else await agregarDetalle(c.id, productoId, 1, nota || null);

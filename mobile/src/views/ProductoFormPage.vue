@@ -11,7 +11,6 @@
 
     <ion-content class="contenido-seguro">
       <div class="contenedor">
-        <!-- Carga de categorías (y del producto, si es edición) -->
         <ion-list v-if="cargando" aria-busy="true" aria-label="Cargando formulario">
           <ion-item v-for="n in 5" :key="n">
             <ion-label>
@@ -242,7 +241,6 @@ async function cargarDatos(): Promise<void> {
   }
 }
 
-/** Replica las reglas de ProductoStoreRequest/ProductoUpdateRequest (el backend valida igual). */
 function validar(): boolean {
   (Object.keys(errores) as Campo[]).forEach((campo) => delete errores[campo]);
 
@@ -328,7 +326,6 @@ async function avisarConNotificacion(nombre: string, esNuevo: boolean): Promise<
     });
     await toast.present();
   }
-  // 'no-soportado' (navegador): solo queda el toast de éxito.
 }
 
 async function guardar(): Promise<void> {
@@ -358,12 +355,10 @@ async function guardar(): Promise<void> {
     if (esEdicion.value) {
       router.back();
     } else {
-      // replace: el formulario de "nuevo" no queda en el historial detrás del detalle.
       await router.replace({ name: 'producto-detalle', params: { id: producto.id } });
     }
   } catch (e) {
     const normalizado = normalizarError(e);
-    // 422 validacion_fallida -> errores por campo del FormRequest.
     for (const [campo, mensaje] of Object.entries(normalizado.errores)) {
       errores[campo as Campo] = mensaje;
     }

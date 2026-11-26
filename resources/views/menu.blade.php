@@ -25,10 +25,8 @@
         <button type="button" class="btn btn--primary" data-roles="administrador" data-nuevo-platillo hidden><x-icon name="mas" /> Nuevo platillo</button>
     </div>
 
-    {{-- ListadoView pinta aquí los estados de carga, vacío, error y datos. --}}
     <div id="app-container" aria-live="polite"></div>
 
-    {{-- Crear / editar platillo (solo administrador) --}}
     <dialog class="modal" id="dlg-platillo" aria-labelledby="dlg-platillo-titulo">
         <form method="post" action="#" data-form-platillo novalidate>
             <div class="modal-head">
@@ -68,7 +66,6 @@
         </form>
     </dialog>
 
-    {{-- Administrar categorías (solo administrador) --}}
     <dialog class="modal" id="dlg-categorias" aria-labelledby="dlg-categorias-titulo">
         <div class="modal-head">
             <div>

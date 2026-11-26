@@ -1,6 +1,5 @@
 import { isAxiosError } from 'axios';
 
-/** Forma uniforme de los errores del backend (ver bootstrap/app.php). */
 interface ErrorApi {
   message?: string;
   codigo?: string;
@@ -11,9 +10,7 @@ export interface ErrorNormalizado {
   mensaje: string;
   status: number | null;
   codigo: string | null;
-  /** Primer error por campo cuando codigo = validacion_fallida (422). */
   errores: Record<string, string>;
-  /** true si no hubo respuesta del servidor (sin red, servidor caído, timeout). */
   sinConexion: boolean;
 }
 

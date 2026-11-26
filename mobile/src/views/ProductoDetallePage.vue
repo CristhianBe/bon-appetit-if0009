@@ -16,7 +16,6 @@
 
     <ion-content class="contenido-seguro">
       <div class="contenedor">
-        <!-- Carga -->
         <ion-card v-if="cargando && !producto" aria-busy="true" aria-label="Cargando producto">
           <ion-skeleton-text :animated="true" class="skeleton-imagen" />
           <ion-card-header>
@@ -29,7 +28,6 @@
           </ion-card-content>
         </ion-card>
 
-        <!-- 404: el producto no existe -->
         <EstadoVacio
           v-else-if="noEncontrado"
           titulo="Producto no encontrado"
@@ -39,7 +37,6 @@
           <ion-button @click="router.replace({ name: 'productos' })">Volver al menú</ion-button>
         </EstadoVacio>
 
-        <!-- Error -->
         <EstadoError
           v-else-if="error"
           :mensaje="error.mensaje"
@@ -47,7 +44,6 @@
           @reintentar="cargar"
         />
 
-        <!-- Detalle -->
         <template v-else-if="producto">
           <AvisoDesactualizado v-if="actualizadoEnCache" :actualizado-en="actualizadoEnCache" />
 
@@ -128,7 +124,6 @@ import { normalizarError, type ErrorNormalizado } from '@/services/errores';
 import { formatearPrecio, obtenerProducto, type Producto } from '@/services/productosApi';
 import { tieneRol } from '@/services/sesion';
 
-/** Editar el menú es solo del administrador (la API responde 403 al resto). */
 const esAdmin = computed(() => tieneRol('administrador'));
 
 const props = defineProps<{ id: number }>();
@@ -156,7 +151,6 @@ async function cargar(): Promise<void> {
       producto.value = null;
       noEncontrado.value = true;
     } else if (normalizado.sinConexion) {
-      // Sin red: si el producto está en el último listado guardado, se muestra desde ahí.
       const cache = await leerCacheProductos();
       const enCache = cache?.productos.find((p) => p.id === props.id);
       if (cache && enCache) {
@@ -179,8 +173,6 @@ function editar(): void {
   router.push({ name: 'producto-editar', params: { id: props.id } });
 }
 
-// Se vuelve a consultar cada vez que la vista entra en pantalla (por ejemplo, al volver
-// de editar), sin mostrar el skeleton si ya hay datos.
 onIonViewWillEnter(cargar);
 </script>
 

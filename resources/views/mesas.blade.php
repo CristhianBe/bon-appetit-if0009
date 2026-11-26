@@ -9,7 +9,6 @@
 @endpush
 
 @section('content')
-    {{-- Todo el contenido se carga desde la API (GET /api/mesas y GET /api/reservas) con resources/js/pages/mesas.js --}}
     <section class="kpis" aria-label="Resumen del salón">
         <article class="panel-card kpi">
             <div class="kpi-head">Libres <span class="kpi-icon"><x-icon name="check" /></span></div>
@@ -60,10 +59,8 @@
 
     <div id="mesas-contenedor" aria-live="polite"></div>
 
-    {{-- Detalle de una mesa (se rellena por JS) --}}
     <dialog class="modal" id="dlg-mesa" aria-labelledby="dlg-mesa-titulo"></dialog>
 
-    {{-- Abrir comanda --}}
     <dialog class="modal" id="dlg-abrir" aria-labelledby="dlg-abrir-titulo">
         <form method="post" action="#" data-form-abrir novalidate>
             <div class="modal-head">
@@ -91,7 +88,6 @@
         </form>
     </dialog>
 
-    {{-- Crear / editar mesa (solo administrador) --}}
     <dialog class="modal" id="dlg-mesa-form" aria-labelledby="dlg-mesa-form-titulo">
         <form method="post" action="#" data-form-mesa novalidate>
             <div class="modal-head">

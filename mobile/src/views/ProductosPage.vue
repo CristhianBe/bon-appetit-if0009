@@ -15,7 +15,6 @@
     </ion-header>
 
     <ion-content class="contenido-seguro">
-      <!-- Recarga por gesto de arrastre -->
       <ion-refresher slot="fixed" :disabled="cargandoInicial" @ion-refresh="alArrastrar">
         <ion-refresher-content pulling-text="Deslizá para actualizar" refreshing-spinner="crescent" />
       </ion-refresher>
@@ -27,7 +26,6 @@
 
         <AvisoDesactualizado v-if="actualizadoEnCache" :actualizado-en="actualizadoEnCache" />
 
-        <!-- Carga inicial: skeleton -->
         <ion-list v-if="cargandoInicial" aria-busy="true" aria-label="Cargando productos">
           <ion-item v-for="n in 6" :key="n">
             <ion-thumbnail slot="start">
@@ -40,7 +38,6 @@
           </ion-item>
         </ion-list>
 
-        <!-- Error sin datos que mostrar -->
         <EstadoError
           v-else-if="error"
           :mensaje="error.mensaje"
@@ -48,7 +45,6 @@
           @reintentar="cargarInicial"
         />
 
-        <!-- Vacío -->
         <EstadoVacio
           v-else-if="productos.length === 0"
           titulo="No hay productos en el menú"
@@ -61,7 +57,6 @@
           </ion-button>
         </EstadoVacio>
 
-        <!-- Listado -->
         <ion-grid v-else class="ion-no-padding">
           <ion-row>
             <ion-col v-for="producto in productos" :key="producto.id" size="12" size-md="6" size-xl="4">
@@ -90,12 +85,10 @@
         </ion-grid>
       </div>
 
-      <!-- Scroll infinito: pide la página siguiente al llegar al final -->
       <ion-infinite-scroll :disabled="!hayMasPaginas" threshold="150px" @ion-infinite="cargarSiguiente">
         <ion-infinite-scroll-content loading-spinner="crescent" loading-text="Cargando más productos..." />
       </ion-infinite-scroll>
 
-      <!-- Crear platillos es solo del administrador (la API responde 403 al resto). -->
       <ion-fab v-if="esAdmin" slot="fixed" vertical="bottom" horizontal="end">
         <ion-fab-button aria-label="Nuevo producto" @click="router.push({ name: 'producto-nuevo' })">
           <ion-icon :icon="add" />
@@ -162,7 +155,6 @@ const pagina = ref(0);
 const ultimaPagina = ref(1);
 const cargandoInicial = ref(true);
 const error = ref<ErrorNormalizado | null>(null);
-/** Si tiene valor, lo que se ve viene de la caché (sin conexión). */
 const actualizadoEnCache = ref<string | null>(null);
 
 const hayMasPaginas = computed(
@@ -186,7 +178,6 @@ async function mostrarCache(motivo: ErrorNormalizado): Promise<void> {
   }
 }
 
-/** Trae la primera página y reemplaza el listado. */
 async function recargarPrimeraPagina(): Promise<void> {
   if (!(await hayConexion())) {
     await mostrarCache({
@@ -285,7 +276,6 @@ async function confirmarLogout(): Promise<void> {
 onMounted(async () => {
   await cargarInicial();
 
-  // Cuando vuelve la conexión y se está viendo la caché, se actualiza solo.
   escuchaRed = await Network.addListener('networkStatusChange', async (estado) => {
     if (estado.connected && actualizadoEnCache.value) {
       await recargarPrimeraPagina();
@@ -312,7 +302,6 @@ onUnmounted(() => {
 .contenedor-ancho {
   max-width: 1200px;
   margin: 0 auto;
-  /* Deja libre el espacio del FAB al final de la lista. */
   padding-bottom: 72px;
 }
 

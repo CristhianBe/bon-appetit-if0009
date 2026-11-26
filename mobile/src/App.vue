@@ -1,7 +1,6 @@
 <template>
   <ion-app>
 
-    <!-- Menú lateral (se abre con el botón ☰ del encabezado) -->
     <ion-menu content-id="main-content" type="overlay">
       <ion-header>
         <ion-toolbar color="primary">
@@ -22,7 +21,6 @@
 
     <ion-router-outlet id="main-content"></ion-router-outlet>
 
-    <!-- Barra inferior: solo en las pantallas principales -->
     <nav v-if="mostrarBarra" id="barra-inferior" class="barra-inferior" aria-label="Secciones">
       <button
         v-for="s in secciones"
@@ -58,19 +56,16 @@ const TODAS_LAS_SECCIONES: Array<{ ruta: string; texto: string; corto: string; i
   { ruta: 'mesas', texto: 'Mesas', corto: 'Mesas', icono: gridOutline },
   { ruta: 'comandas', texto: 'Comandas', corto: 'Comandas', icono: receiptOutline },
   { ruta: 'productos', texto: 'Menú y catálogo', corto: 'Menú', icono: restaurantOutline },
-  // Solo el administrador ve la gestión de categorías y usuarios (la API también lo exige).
   { ruta: 'administracion', texto: 'Administración', corto: 'Admin', icono: settingsOutline, roles: ['administrador'] },
 ];
 
 const secciones = computed(() => TODAS_LAS_SECCIONES.filter((s) => !s.roles || (rolActual.value && s.roles.includes(rolActual.value))));
 
-/** Pantallas "raíz": atrás desde acá cierra la app en vez de navegar. */
 const RUTAS_RAIZ = ['login', ...TODAS_LAS_SECCIONES.map((s) => s.ruta)];
 
 const rutaActual = computed(() => String(route.name ?? ''));
 const mostrarBarra = computed(() => secciones.value.some((s) => s.ruta === rutaActual.value));
 
-// Con la barra visible, el contenido y el botón flotante dejan espacio abajo (ver variables.css).
 watch(mostrarBarra, (visible) => document.body.classList.toggle('con-barra', visible), { immediate: true });
 
 function ir(ruta: string): void {
@@ -80,9 +75,6 @@ function ir(ruta: string): void {
 let escuchaBotonAtras: PluginListenerHandle | null = null;
 
 onMounted(async () => {
-  // Botón atrás físico de Android. Al iniciar sesión se usa router.replace, así que el
-  // login nunca queda en el historial; además, desde una pantalla raíz atrás sale de la
-  // app en lugar de intentar volver al login.
   escuchaBotonAtras = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
     if (RUTAS_RAIZ.includes(rutaActual.value)) {
       CapacitorApp.exitApp();

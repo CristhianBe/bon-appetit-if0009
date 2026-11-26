@@ -1,7 +1,6 @@
 <template>
   <ion-page>
     <ion-content class="contenido-seguro login-fondo">
-      <!-- Franja de marca, como el panel vino del login web -->
       <section class="marca" aria-label="Bon Appétit">
         <span class="logo"><ion-icon :icon="restaurantOutline" aria-hidden="true" /></span>
         <p class="nombre">Bon Appétit</p>
@@ -103,7 +102,6 @@ const errores = reactive<{ email?: string; password?: string }>({});
 
 const sesionExpirada = computed(() => route.query.expirada === '1' && !mensajeError.value);
 
-/** Mismas reglas que IniciarSesionRequest: email requerido y con formato; password requerido. */
 function validar(): boolean {
   errores.email = undefined;
   errores.password = undefined;
@@ -131,8 +129,6 @@ async function enviar(): Promise<void> {
     await login(email.value.trim(), password.value);
     password.value = '';
 
-    // replace (no push): la entrada del login se sustituye en el historial, así el
-    // botón atrás de Android nunca vuelve a esta pantalla después de autenticarse.
     const destino = typeof route.query.redirect === 'string' ? route.query.redirect : '/mesas';
     await router.replace(destino);
   } catch (error) {
@@ -140,7 +136,6 @@ async function enviar(): Promise<void> {
     if (normalizado.status === 429) {
       mensajeError.value = 'Demasiados intentos. Esperá un minuto antes de volver a intentar.';
     } else {
-      // 401 -> "Credenciales incorrectas." | 422 -> errores por campo | sin red.
       mensajeError.value = normalizado.mensaje;
       errores.email = normalizado.errores.email;
       errores.password = normalizado.errores.password;
@@ -152,7 +147,6 @@ async function enviar(): Promise<void> {
 </script>
 
 <style scoped>
-/* La franja de marca ocupa todo el ancho, por encima del padding del contenido. */
 .marca {
   margin: calc(-16px - var(--ion-safe-area-top, 0px)) calc(-16px - var(--ion-safe-area-right, 0px)) 24px calc(-16px - var(--ion-safe-area-left, 0px));
   padding: calc(40px + var(--ion-safe-area-top, 0px)) 24px 32px;

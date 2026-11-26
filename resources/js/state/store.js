@@ -27,4 +27,3 @@ export const store = new Store({
   cargando: false,
   error: null,
 });
-

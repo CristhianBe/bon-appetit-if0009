@@ -12,12 +12,10 @@
           <p class="saludo">Hola, {{ usuarioActual.name }} · {{ rolActual ? ETIQUETA_ROL[rolActual] : 'sin rol' }}</p>
         </ion-text>
 
-        <!-- Cargando -->
         <div v-if="cargando && !mesas.length" class="mesas" aria-busy="true">
           <ion-skeleton-text v-for="n in 6" :key="n" animated class="esqueleto" />
         </div>
 
-        <!-- Error -->
         <EstadoError
           v-else-if="error && !mesas.length"
           :mensaje="error.mensaje"
@@ -25,7 +23,6 @@
           @reintentar="cargar"
         />
 
-        <!-- Vacío -->
         <EstadoVacio
           v-else-if="!mesas.length"
           titulo="Todavía no hay mesas"
@@ -33,7 +30,6 @@
         />
 
         <template v-else>
-          <!-- Resumen del turno -->
           <section class="resumen" aria-label="Resumen del salón">
             <div class="dato"><span>Libres</span><strong class="ok">{{ cuenta('libre') }}</strong></div>
             <div class="dato"><span>Ocupadas</span><strong class="aviso">{{ cuenta('ocupada') + cuenta('retraso') }}</strong></div>
@@ -41,7 +37,6 @@
             <div class="dato dato--ancho"><span>Facturación activa</span><strong class="dinero">{{ colones(facturacion) }}</strong></div>
           </section>
 
-          <!-- Filtro por zona -->
           <div class="chips" role="group" aria-label="Filtrar por zona">
             <button
               v-for="z in zonas"
@@ -53,7 +48,6 @@
             >{{ z || 'Todas' }}</button>
           </div>
 
-          <!-- Mesas -->
           <div class="mesas">
             <article v-for="m in visibles" :key="m.id" :class="['mesa', `mesa--${visual(m)}`]">
               <header>
@@ -140,7 +134,6 @@ function visual(m: Mesa): Visual {
 
 const cuenta = (v: Visual): number => mesas.value.filter((m) => visual(m) === v).length;
 
-/** Administrador y cajero ven cualquier comanda; el mesero solo las suyas (igual que ComandaPolicy). */
 function puedeVer(m: Mesa): boolean {
   return tieneRol('administrador', 'cajero') || m.comanda_activa?.mesero_id === usuarioActual.value?.id;
 }
@@ -208,7 +201,6 @@ async function avisar(mensaje: string): Promise<void> {
   await toast.present();
 }
 
-// Al volver a la pantalla se recarga, y mientras está visible se actualiza cada 30 s.
 let temporizador: ReturnType<typeof setInterval> | undefined;
 onIonViewWillEnter(() => {
   cargar();

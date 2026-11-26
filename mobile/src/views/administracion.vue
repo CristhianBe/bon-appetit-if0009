@@ -8,7 +8,6 @@
       </ion-refresher>
 
       <div class="contenedor-ancho">
-        <!-- Solo el administrador gestiona categorías y usuarios (la API responde 403 al resto). -->
         <EstadoVacio
           v-if="!esAdmin"
           titulo="Solo para administradores"
@@ -24,7 +23,6 @@
           <div v-if="cargando && !hayDatos" class="estado-centrado"><ion-spinner /></div>
           <EstadoError v-else-if="error && !hayDatos" :mensaje="error.mensaje" :sin-conexion="error.sinConexion" @reintentar="cargar" />
 
-          <!-- Categorías -->
           <ion-list v-else-if="tab === 'categorias'" lines="full" class="lista">
             <ion-item-sliding v-for="c in categorias" :key="c.id">
               <ion-item>
@@ -45,7 +43,6 @@
             <p class="ayuda">Deslizá una fila hacia la izquierda para editarla o eliminarla.</p>
           </ion-list>
 
-          <!-- Usuarios -->
           <ion-list v-else lines="full" class="lista">
             <ion-item-sliding v-for="u in usuarios" :key="u.id">
               <ion-item>
@@ -133,7 +130,6 @@ async function refrescar(evento: CustomEvent): Promise<void> {
   (evento.target as HTMLIonRefresherElement).complete();
 }
 
-/** Ejecuta la llamada y muestra el mensaje del servidor (422/409) si falla. Devuelve true si salió bien. */
 async function intentar(accion: () => Promise<unknown>, exito: string): Promise<boolean> {
   try {
     await accion();
@@ -156,8 +152,6 @@ async function confirmar(titulo: string, mensaje: string): Promise<boolean> {
   await alerta.present();
   return (await alerta.onDidDismiss()).role === 'destructive';
 }
-
-/* ---------------------------------------------------------------- Categorías */
 
 async function editarCategoria(c?: Categoria): Promise<void> {
   const alerta = await alertController.create({
@@ -185,8 +179,6 @@ async function eliminarCategoria(c: Categoria): Promise<void> {
   await intentar(() => http.delete(`/categorias/${c.id}`), `Categoría «${c.nombre}» eliminada.`);
 }
 
-/* ---------------------------------------------------------------- Usuarios */
-
 async function editarUsuario(u?: UsuarioApi): Promise<void> {
   const datos = await alertController.create({
     header: u ? `Editar a ${u.name}` : 'Nuevo usuario',
@@ -207,7 +199,6 @@ async function editarUsuario(u?: UsuarioApi): Promise<void> {
     return;
   }
 
-  // El administrador no se cambia su propio rol (para no quedarse sin acceso).
   let rol: Rol | null = u?.rol ?? 'mesero';
   if (!u || u.id !== usuarioActual.value?.id) {
     const elegir = await alertController.create({

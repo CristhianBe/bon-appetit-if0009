@@ -1,11 +1,5 @@
 # syntax=docker/dockerfile:1
-# Lab 14 — Imagen de producción de Bon Appétit (back-end Laravel + front-end web).
-# Construcción en múltiples etapas: las herramientas de build (Node, Composer) se
-# quedan en etapas intermedias y la imagen final solo lleva PHP + la app.
 
-############################################
-# Etapa 1: build optimizado del front-end (Vite + Tailwind)
-############################################
 FROM node:22-alpine AS assets
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -15,18 +9,11 @@ COPY resources ./resources
 COPY public ./public
 RUN npm run build
 
-############################################
-# Etapa base: PHP 8.4 (Alpine) + extensiones necesarias
-############################################
 FROM php:8.4-cli-alpine AS php-base
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
 RUN install-php-extensions pdo_mysql intl bcmath opcache \
  && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-# php.ini de producción: display_errors=Off, así ningún error muestra rutas ni trazas al visitante.
 
-############################################
-# Etapa 2: dependencias de PHP SIN paquetes de desarrollo
-############################################
 FROM php-base AS vendor
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
@@ -35,9 +22,6 @@ RUN composer install --no-dev --no-interaction --prefer-dist --no-progress --no-
 COPY . .
 RUN composer dump-autoload --no-dev --optimize --no-scripts
 
-############################################
-# Etapa final: runtime mínimo, usuario sin privilegios
-############################################
 FROM php-base AS runtime
 ENV APP_ENV=production \
     APP_DEBUG=false \
@@ -54,7 +38,6 @@ RUN chmod 755 /usr/local/bin/entrypoint.sh \
  && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
  && chown -R www-data:www-data storage bootstrap/cache
 
-# A partir de acá nada corre como root (ni el build restante ni el contenedor).
 USER www-data
 RUN php artisan package:discover --ansi
 

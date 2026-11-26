@@ -1,11 +1,3 @@
-/**
- * Pantalla de Comandas: comandas activas reales (GET /api/comandas?activas=1) con su detalle.
- *
- * Qué puede hacer cada rol (la API vuelve a validarlo, esto solo evita mostrar botones inútiles):
- *   - mesero:        agrega/quita productos, envía a cocina y marca servida SUS comandas.
- *   - cajero:        ve todas y cobra (POST /api/comandas/{id}/cobrar).
- *   - administrador: todo lo anterior sobre cualquier comanda.
- */
 import {
     api, asegurarRol, avisar, colones, conBoton, confirmar, escapar, formatoDuracion, mensajeError, minutosDesde,
     mostrarErrorForm, pintarCargando, pintarError, tieneRol, traerTodo, usuario,
@@ -23,18 +15,16 @@ const ESTADOS = {
 
 const estado = {
     comandas: [],
-    estadosId: {},        // codigo → id (para cambiar el estado de una comanda)
+    estadosId: {},
     metodos: [],
-    productos: null,      // se carga la primera vez que se abre el selector
-    seleccionada: null,   // id de la comanda que se ve a la derecha
+    productos: null,
+    seleccionada: null,
     filtros: { estado: '', texto: '' },
     cargado: false,
 };
 
 const $lista = document.querySelector('[data-lista]');
 const $detalle = document.querySelector('[data-detalle-contenedor]');
-
-/* ------------------------------------------------------------------ Permisos y cálculos */
 
 const esMia = (c) => c.user_id === usuario()?.id;
 const puedeEditar = (c) => tieneRol('administrador') || (tieneRol('mesero') && esMia(c));
@@ -59,8 +49,6 @@ function comandasFiltradas() {
     const { estado: est, texto } = estado.filtros;
     return estado.comandas.filter((c) => (!est || codigoEstado(c) === est) && (!texto || textoBuscable(c).includes(texto)));
 }
-
-/* ------------------------------------------------------------------ Render: KPIs, filtros, lista */
 
 function pintarKpis() {
     const lista = estado.comandas;
@@ -125,8 +113,6 @@ function pintarLista() {
             </button>`;
     }).join('')}</div>`;
 }
-
-/* ------------------------------------------------------------------ Render: detalle */
 
 function pintarDetalle() {
     const c = estado.comandas.find((x) => x.id === estado.seleccionada);
@@ -221,8 +207,6 @@ function seleccionar(id, { desplazar = false } = {}) {
     }
 }
 
-/* ------------------------------------------------------------------ Carga */
-
 function ajustarSeleccion() {
     const enUrl = Number(decodeURIComponent(window.location.hash.slice(1))) || null;
     const existe = (id) => estado.comandas.some((c) => c.id === id);
@@ -251,7 +235,6 @@ async function cargar({ silencioso = false } = {}) {
     }
 }
 
-/** Vuelve a pedir una sola comanda (después de agregar un producto, cambiar de estado, etc.). */
 async function refrescar(id) {
     const { data } = await api.get(`/comandas/${id}`);
     const i = estado.comandas.findIndex((c) => c.id === id);
@@ -259,8 +242,6 @@ async function refrescar(id) {
     pintarTodo();
     return data;
 }
-
-/* ------------------------------------------------------------------ Acciones sobre la comanda */
 
 const comandaActual = () => estado.comandas.find((c) => c.id === estado.seleccionada);
 
@@ -316,8 +297,6 @@ $detalle.addEventListener('click', async (e) => {
     else if (boton.dataset.accion === 'cobrar') abrirCobro(c);
     else if (boton.dataset.accion === 'cancelar') await ejecutar(() => cancelarComanda(c));
 });
-
-/* ------------------------------------------------------------------ Selector de productos */
 
 const dlgProductos = document.getElementById('dlg-productos');
 const pickerFiltro = { texto: '', categoria: '' };
@@ -383,7 +362,6 @@ async function agregarProducto(productoId, boton) {
 
     await conBoton(boton, async () => {
         try {
-            // Mismo producto sin nota → se suma a la línea que ya existe, en vez de duplicarla.
             const existente = !nota && (c.detalles ?? []).find((d) => d.producto_id === productoId && !d.notas);
             if (existente) await api.put(`/detalles/${existente.id}`, { cantidad: existente.cantidad + 1 });
             else await api.post(`/comandas/${c.id}/detalles`, { producto_id: productoId, cantidad: 1, notas: nota || null });
@@ -393,7 +371,7 @@ async function agregarProducto(productoId, boton) {
         } catch (error) {
             mostrarErrorForm(dlgProductos, mensajeError(error));
             if (error.codigo === 'producto_no_disponible') {
-                estado.productos = null; // se vuelve a pedir el menú con la disponibilidad actual
+                estado.productos = null;
             }
         }
     });
@@ -409,8 +387,6 @@ dlgProductos.querySelector('[data-picker-buscar]').addEventListener('input', (e)
     pickerFiltro.texto = e.target.value;
     if (estado.productos) pintarSelector();
 });
-
-/* ------------------------------------------------------------------ Cobro */
 
 const dlgCobrar = document.getElementById('dlg-cobrar');
 const formCobrar = dlgCobrar.querySelector('form');
@@ -475,8 +451,6 @@ formCobrar.addEventListener('submit', async (e) => {
     });
 });
 
-/* ------------------------------------------------------------------ Filtros y selección */
-
 $lista.addEventListener('click', (e) => {
     const tarjeta = e.target.closest('[data-comanda]');
     if (tarjeta) seleccionar(Number(tarjeta.dataset.comanda), { desplazar: true });
@@ -494,7 +468,6 @@ document.querySelector('[data-filtro-buscar]').addEventListener('input', (e) => 
     reaplicarFiltros();
 });
 
-/** Al filtrar, si la comanda abierta quedó oculta se muestra la primera visible. */
 function reaplicarFiltros() {
     const visibles = comandasFiltradas();
     if (!visibles.some((c) => c.id === estado.seleccionada)) estado.seleccionada = visibles[0]?.id ?? null;
@@ -507,8 +480,6 @@ window.addEventListener('hashchange', () => {
     const id = Number(window.location.hash.slice(1));
     if (id && estado.comandas.some((c) => c.id === id)) seleccionar(id);
 });
-
-/* ------------------------------------------------------------------ Arranque */
 
 (async () => {
     await asegurarRol();

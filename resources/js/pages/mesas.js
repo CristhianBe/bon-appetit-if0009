@@ -1,8 +1,3 @@
-/**
- * Pantalla de Mesas: lista real del salón (GET /api/mesas) con la comanda en curso de cada
- * mesa y las reservas de hoy (GET /api/reservas). Desde aquí se abre una comanda
- * (POST /api/comandas) o se recibe una reserva; el administrador también crea y edita mesas.
- */
 import {
     api, asegurarRol, avisar, colones, conBoton, confirmar, escapar, fechaIso, formatoDuracion, mensajeError,
     minutosDesde, mostrarErrorForm, pintarCargando, pintarError, tieneRol, traerTodo, usuario,
@@ -28,8 +23,6 @@ const contenedor = document.getElementById('mesas-contenedor');
 const puedeAbrir = () => tieneRol('administrador', 'mesero');
 const esAdmin = () => tieneRol('administrador');
 
-/* ------------------------------------------------------------------ Datos derivados */
-
 function reservasDeMesa(mesa) {
     return estado.reservasHoy
         .filter((r) => r.mesa_id === mesa.id)
@@ -40,10 +33,8 @@ function minutosEnMesa(mesa) {
     return minutosDesde(mesa.comanda_activa?.abierta_en);
 }
 
-/** Estado "visual": libre | ocupada | retraso | reservada. La reserva solo marca mesas libres. */
 function estadoVisual(mesa) {
     const codigo = mesa.estado?.codigo;
-    // Si la mesa tiene una comanda en curso está ocupada, diga lo que diga su estado guardado.
     if (codigo === 'ocupada' || mesa.comanda_activa) return minutosEnMesa(mesa) > MINUTOS_RETRASO ? 'retraso' : 'ocupada';
     if (codigo === 'reservada' || reservasDeMesa(mesa).length > 0) return 'reservada';
     return 'libre';
@@ -55,8 +46,6 @@ function puedeVerComanda(mesa) {
     return tieneRol('administrador', 'cajero') || (tieneRol('mesero') && c.mesero_id === usuario()?.id);
 }
 
-/* ------------------------------------------------------------------ Render */
-
 function textoBuscable(mesa) {
     const reserva = reservasDeMesa(mesa)[0];
     return `mesa ${mesa.numero} ${mesa.zona} ${mesa.comanda_activa?.mesero ?? ''} ${reserva?.nombre ?? ''}`.toLowerCase();
@@ -64,7 +53,6 @@ function textoBuscable(mesa) {
 
 function mesasFiltradas() {
     const { zona, estado: est, texto } = estado.filtros;
-    // «Ocupadas» incluye las que tienen retraso (el retraso es un subconjunto de las ocupadas).
     const coincideEstado = (m) => !est || estadoVisual(m) === est || (est === 'ocupada' && estadoVisual(m) === 'retraso');
     return estado.mesas.filter((m) => (!zona || m.zona === zona) && coincideEstado(m)
         && (!texto || textoBuscable(m).includes(texto)));
@@ -181,8 +169,6 @@ function pintarTodo() {
     pintarLista();
 }
 
-/* ------------------------------------------------------------------ Carga */
-
 async function cargar({ silencioso = false } = {}) {
     if (!silencioso) pintarCargando(contenedor, 'Cargando el salón…');
     try {
@@ -195,12 +181,10 @@ async function cargar({ silencioso = false } = {}) {
         estado.cargado = true;
         pintarTodo();
     } catch (error) {
-        if (silencioso && estado.cargado) return; // un fallo de red en la actualización automática no borra lo que ya se ve
+        if (silencioso && estado.cargado) return;
         pintarError(contenedor, mensajeError(error), () => cargar());
     }
 }
-
-/* ------------------------------------------------------------------ Detalle de mesa */
 
 function abrirDetalle(mesa) {
     const dialogo = document.getElementById('dlg-mesa');
@@ -245,11 +229,9 @@ function abrirDetalle(mesa) {
     dialogo.showModal();
 }
 
-/* ------------------------------------------------------------------ Abrir comanda / recibir reserva */
-
 const dialogoAbrir = document.getElementById('dlg-abrir');
 const formAbrir = dialogoAbrir.querySelector('form');
-let contextoAbrir = null; // { mesa, reserva? }
+let contextoAbrir = null;
 
 function abrirDialogoComanda(mesa, reserva = null) {
     contextoAbrir = { mesa, reserva };
@@ -257,7 +239,7 @@ function abrirDialogoComanda(mesa, reserva = null) {
         ? `Mesa ${mesa.numero} · reserva de ${reserva.nombre} (${reserva.hora})`
         : `Mesa ${mesa.numero} · ${mesa.zona} · capacidad ${mesa.capacidad}`;
     formAbrir.personas.value = reserva?.personas ?? Math.min(2, mesa.capacidad);
-    formAbrir.personas.max = Math.max(mesa.capacidad, 1) + 10; // se permite juntar sillas, pero con un tope razonable
+    formAbrir.personas.max = Math.max(mesa.capacidad, 1) + 10;
     formAbrir.notas.value = reserva?.notas ?? '';
     mostrarErrorForm(dialogoAbrir, '');
     dialogoAbrir.showModal();
@@ -278,13 +260,12 @@ formAbrir.addEventListener('submit', async (e) => {
         try {
             const comanda = await api.post('/comandas', {
                 mesa_id: mesa.id,
-                user_id: usuario().id, // el mesero siempre abre a su nombre; el servidor lo vuelve a forzar
+                user_id: usuario().id,
                 personas: Number(formAbrir.personas.value),
                 notas: formAbrir.notas.value.trim() || null,
             });
 
             if (reserva) {
-                // La reserva se da por cumplida; si esto fallara, la comanda ya quedó abierta y se avisa.
                 await api.put(`/reservas/${reserva.id}`, { estado: 'cumplida' })
                     .catch(() => avisar('La comanda se abrió, pero no se pudo marcar la reserva como cumplida.'));
             }
@@ -296,8 +277,6 @@ formAbrir.addEventListener('submit', async (e) => {
         }
     });
 });
-
-/* ------------------------------------------------------------------ Crear / editar mesa (administrador) */
 
 const dialogoMesa = document.getElementById('dlg-mesa-form');
 const formMesa = dialogoMesa.querySelector('form');
@@ -358,8 +337,6 @@ dialogoMesa.querySelector('[data-mesa-eliminar]').addEventListener('click', asyn
     }
 });
 
-/* ------------------------------------------------------------------ Eventos */
-
 function mesaDe(elemento) {
     return estado.mesas.find((m) => String(m.id) === elemento.dataset.mesa);
 }
@@ -400,13 +377,10 @@ document.querySelector('[data-filtro-buscar]').addEventListener('input', (e) => 
     pintarLista();
 });
 
-/* ------------------------------------------------------------------ Arranque */
-
 (async () => {
     await asegurarRol();
     await cargar();
 
-    // Mantiene el salón al día sin recargar (se omite si hay un diálogo abierto o la pestaña está oculta).
     setInterval(() => {
         if (document.hidden || document.querySelector('dialog[open]')) return;
         cargar({ silencioso: true });

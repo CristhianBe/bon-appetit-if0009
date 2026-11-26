@@ -1,6 +1,5 @@
 @props(['name'])
 @php
-    // Íconos de línea (estilo Lucide), dibujados en una caja de 24x24.
     $paths = [
         'mesas' => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
         'comandas' => '<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/>',

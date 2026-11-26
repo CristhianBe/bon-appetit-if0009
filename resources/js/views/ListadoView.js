@@ -1,30 +1,12 @@
-/**
- * Módulo encargado del renderizado del catálogo de platillos,
- * implementando los 4 estados de la interfaz: cargando, vacío, error y datos.
- * Si el usuario es administrador (opción puedeEditar) cada tarjeta muestra las acciones de
- * gestión del menú: editar, cambiar disponibilidad y eliminar (las atiende menu.js).
- *
- * Los filtros (búsqueda, categoría y "solo disponibles") se aplican en el navegador
- * sobre la página cargada. Todo texto que viene de la API se escapa antes de
- * insertarlo en el HTML, para que un nombre o descripción con etiquetas no se ejecute.
- */
-
 const ICONO_CUBIERTOS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2v20M4 2v6a3 3 0 0 0 6 0V2"/><path d="M17 22V2c-2.2 1.2-3.5 3.6-3.5 7v4H17"/></svg>';
 
 const escapar = (valor) => String(valor ?? '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
 ));
 
-// Formato de colones del panel: ₡38.500
 export const colones = (monto) => `₡${Math.round(Number(monto || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 
 export class ListadoView {
-    /**
-     * @param {Object} apiClient - Cliente HTTP con un método get(endpoint)
-     * @param {HTMLElement} containerElement - Contenedor donde se pinta la vista
-     * @param {Object} store - Estado global opcional (setState)
-     * @param {{puedeEditar?: boolean}} opciones
-     */
     constructor(apiClient, containerElement, store = null, { puedeEditar = false } = {}) {
         this.puedeEditar = puedeEditar;
         this.apiClient = apiClient;
@@ -34,7 +16,7 @@ export class ListadoView {
         this.totalPages = 1;
         this.items = [];
         this.filtros = { texto: '', categoria: '', soloDisponibles: false };
-        this.onCategorias = null; // callback para que la página pinte los chips de categoría
+        this.onCategorias = null;
     }
 
     async render(page = 1) {

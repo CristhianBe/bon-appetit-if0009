@@ -9,7 +9,6 @@
 @endpush
 
 @section('content')
-    {{-- Solo el administrador puede usar esta pantalla (la API devuelve 403 al resto). --}}
     <div class="alert alert--warning" role="alert" data-sin-permiso hidden>
         <x-icon name="alerta" /> <span>Esta sección es solo para administradores.</span>
     </div>

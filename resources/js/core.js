@@ -1,13 +1,7 @@
-/**
- * Núcleo compartido del panel web: sesión, cliente de la API, roles y utilidades de pantalla.
- * Lo importan panel.js (comportamiento global) y cada página (mesas, comandas, menú, etc.).
- */
 import { ApiClient } from './api/ApiClient.js';
 
-/* ================================================================== Sesión */
-
 const CLAVE_SESION = 'ba_sesion';
-export const DURACION_TOKEN_MS = 30 * 60 * 1000; // igual que la expiración del token en AuthController
+export const DURACION_TOKEN_MS = 30 * 60 * 1000;
 
 function almacenes() {
     return [sessionStorage, localStorage];
@@ -19,7 +13,6 @@ export function leerSesion() {
             const sesion = JSON.parse(almacen.getItem(CLAVE_SESION) || 'null');
             if (sesion) return sesion;
         } catch {
-            /* almacenamiento bloqueado o dato corrupto */
         }
     }
     return null;
@@ -29,13 +22,12 @@ export function guardarSesion(sesion, recordar) {
     try {
         (recordar ? localStorage : sessionStorage).setItem(CLAVE_SESION, JSON.stringify(sesion));
     } catch {
-        /* sin almacenamiento: la sesión dura solo esta carga de página */
     }
 }
 
 export function borrarSesion() {
     for (const almacen of almacenes()) {
-        try { almacen.removeItem(CLAVE_SESION); } catch { /* nada */ }
+        try { almacen.removeItem(CLAVE_SESION); } catch { }
     }
 }
 
@@ -48,13 +40,12 @@ export function sesionVigente() {
     return sesion;
 }
 
-/** Actualiza los datos del usuario en el mismo almacén donde ya estaba la sesión. */
 function actualizarUsuarioGuardado(user) {
     for (const almacen of almacenes()) {
         try {
             const sesion = JSON.parse(almacen.getItem(CLAVE_SESION) || 'null');
             if (sesion) almacen.setItem(CLAVE_SESION, JSON.stringify({ ...sesion, user }));
-        } catch { /* nada */ }
+        } catch { }
     }
 }
 
@@ -64,14 +55,11 @@ export const tieneRol = (...roles) => roles.includes(rol());
 
 export const ETIQUETA_ROL = { administrador: 'Administrador', mesero: 'Mesero', cajero: 'Cajero' };
 
-/* ================================================================== Cliente de la API */
-
 export const api = new ApiClient({
     baseUrl: '/api',
     getToken: () => sesionVigente()?.token ?? null,
 });
 
-// Token vencido o revocado (la API responde 401): se cierra la sesión local y se vuelve al login.
 window.addEventListener(ApiClient.UNAUTHORIZED_EVENT, () => {
     borrarSesion();
     window.location.replace('/login?expirada=1');
@@ -79,10 +67,6 @@ window.addEventListener(ApiClient.UNAUTHORIZED_EVENT, () => {
 
 let promesaRol = null;
 
-/**
- * Las sesiones iniciadas antes de que el login devolviera el rol no lo traen guardado:
- * se pide una vez a /api/user y se completa. Las páginas esperan esta promesa antes de pintar.
- */
 export function asegurarRol() {
     promesaRol ??= (async () => {
         const sesion = sesionVigente();
@@ -90,20 +74,17 @@ export function asegurarRol() {
             try {
                 const user = await api.get('/user');
                 actualizarUsuarioGuardado({ ...sesion.user, ...user });
-            } catch { /* si falla, la UI queda en modo lectura */ }
+            } catch { }
         }
         return usuario();
     })();
     return promesaRol;
 }
 
-/* ================================================================== Utilidades */
-
 export const escapar = (valor) => String(valor ?? '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
 ));
 
-// Mismo formato que el servidor: ₡38.500
 export const colones = (monto) => `₡${Math.round(Number(monto || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 
 export function minutosDesde(iso) {
@@ -116,7 +97,6 @@ export function formatoDuracion(minutos) {
     return `${Math.floor(minutos / 60)} h ${String(minutos % 60).padStart(2, '0')} min`;
 }
 
-/** Fecha local AAAA-MM-DD (la zona horaria del navegador es la del restaurante). */
 export function fechaIso(fecha = new Date()) {
     return new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
@@ -130,7 +110,6 @@ export function etiquetaFecha(iso) {
     return `${dia}/${mes}`;
 }
 
-/** Mensaje legible para mostrar al usuario a partir de un ApiError (o cualquier error). */
 export function mensajeError(error) {
     if (error?.isNetworkError?.()) return 'Sin conexión con el servidor. Revisá tu red e intentá de nuevo.';
     if (error?.isForbidden?.()) return 'Tu rol no tiene permiso para hacer esto.';
@@ -143,7 +122,6 @@ export function mensajeError(error) {
     return error?.message || 'No se pudo completar la acción.';
 }
 
-/** Recorre todas las páginas de un listado paginado y devuelve los elementos juntos. */
 export async function traerTodo(ruta) {
     const separador = ruta.includes('?') ? '&' : '?';
     const primera = await api.get(`${ruta}${separador}page=1`);
@@ -156,8 +134,6 @@ export async function traerTodo(ruta) {
     return datos;
 }
 
-/* ================================================================== Aviso flotante */
-
 let temporizadorAviso;
 export function avisar(texto) {
     const toast = document.querySelector('[data-toast]');
@@ -168,9 +144,6 @@ export function avisar(texto) {
     temporizadorAviso = setTimeout(() => toast.classList.remove('is-visible'), 3600);
 }
 
-/* ================================================================== Diálogos */
-
-/** Diálogo de confirmación compartido (está en el layout). Devuelve una promesa<boolean>. */
 export function confirmar({ titulo, mensaje, aceptar = 'Confirmar', peligro = false }) {
     const dialogo = document.getElementById('dlg-confirmar');
     if (!dialogo) return Promise.resolve(window.confirm(`${titulo}\n${mensaje}`));
@@ -196,7 +169,6 @@ export function confirmar({ titulo, mensaje, aceptar = 'Confirmar', peligro = fa
     });
 }
 
-/** Muestra un error de formulario dentro del propio diálogo/formulario. */
 export function mostrarErrorForm(contenedor, texto) {
     const caja = contenedor.querySelector('[data-form-error]');
     if (!caja) { avisar(texto); return; }
@@ -204,7 +176,6 @@ export function mostrarErrorForm(contenedor, texto) {
     caja.hidden = !texto;
 }
 
-/** Deshabilita un botón mientras corre una acción asíncrona y lo vuelve a habilitar al final. */
 export async function conBoton(boton, accion) {
     const textoOriginal = boton?.textContent;
     if (boton) { boton.disabled = true; boton.setAttribute('aria-busy', 'true'); }
@@ -218,8 +189,6 @@ export async function conBoton(boton, accion) {
         }
     }
 }
-
-/* ================================================================== Estado de carga reutilizable */
 
 export function pintarCargando(contenedor, texto = 'Cargando…') {
     contenedor.innerHTML = `<div class="state-container" role="status"><div class="spinner"></div><p>${escapar(texto)}</p></div>`;
@@ -235,7 +204,6 @@ export function pintarError(contenedor, texto, alReintentar) {
     contenedor.querySelector('[data-reintentar]').addEventListener('click', alReintentar);
 }
 
-/** Muestra u oculta elementos según el rol del usuario: data-roles="administrador,mesero". */
 export function aplicarRoles(raiz = document) {
     const actual = rol();
     raiz.querySelectorAll('[data-roles]').forEach((el) => {

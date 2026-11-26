@@ -1,13 +1,8 @@
-/**
- * Comportamiento global del panel web: guarda de sesión, cierre de sesión, filtrado del menú
- * por rol, diálogos y login. Lo específico de cada pantalla vive en resources/js/pages/*.js.
- */
 import {
     ETIQUETA_ROL, DURACION_TOKEN_MS, api, aplicarRoles, asegurarRol, borrarSesion, guardarSesion,
     sesionVigente, usuario, avisar,
 } from './core.js';
 
-// menu.js y otras páginas importaban avisar desde aquí: se mantiene la exportación.
 export { avisar };
 
 function iniciales(nombre = '') {
@@ -21,7 +16,6 @@ async function protegerPagina() {
         return;
     }
 
-    // Menú lateral y botones se muestran según el rol (administrador / mesero / cajero).
     await asegurarRol();
     const actual = usuario();
     document.querySelectorAll('[data-user-name]').forEach((el) => { el.textContent = actual?.name ?? 'Usuario'; });
@@ -35,7 +29,6 @@ async function protegerPagina() {
             try {
                 await api.post('/logout', null);
             } catch {
-                /* aunque falle la red, la sesión local se cierra igual */
             }
             borrarSesion();
             window.location.replace('/login');
@@ -43,7 +36,6 @@ async function protegerPagina() {
     });
 }
 
-/* ----------------------------------------------------------------- Diálogos */
 function iniciarDialogos() {
     document.addEventListener('click', (e) => {
         const abrir = e.target.closest('[data-abrir]');
@@ -53,7 +45,6 @@ function iniciarDialogos() {
         if (cerrar) cerrar.closest('dialog')?.close();
     });
 
-    // Clic en el fondo oscuro cierra el diálogo (también los que se crean después).
     document.addEventListener('mousedown', (e) => {
         if (e.target instanceof HTMLDialogElement && e.target.open) {
             const caja = e.target.getBoundingClientRect();
@@ -63,7 +54,6 @@ function iniciarDialogos() {
     });
 }
 
-/* ----------------------------------------------------------------- Login */
 function iniciarLogin() {
     const form = document.querySelector('[data-form-login]');
     if (!form) return;
@@ -128,7 +118,6 @@ function iniciarLogin() {
     });
 }
 
-/* ----------------------------------------------------------------- Arranque */
 document.addEventListener('DOMContentLoaded', () => {
     if (document.body.dataset.page === 'login') {
         iniciarLogin();

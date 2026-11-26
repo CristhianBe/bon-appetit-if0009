@@ -1,5 +1,4 @@
 @php
-    // 'roles' = quién ve el enlace. Es solo comodidad visual: la API vuelve a validar cada acción.
     $todos = 'administrador,mesero,cajero';
     $enlaces = [
         ['ruta' => 'mesas', 'texto' => 'Mesas', 'icono' => 'mesas', 'roles' => $todos],
@@ -97,7 +96,6 @@
         @endforeach
     </nav>
 
-    {{-- Diálogo de confirmación compartido (lo usa confirmar() de core.js). --}}
     <dialog class="modal" id="dlg-confirmar" aria-labelledby="dlg-confirmar-titulo">
         <div class="modal-head">
             <h2 id="dlg-confirmar-titulo" data-confirmar-titulo>Confirmar</h2>

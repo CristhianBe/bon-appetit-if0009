@@ -1,5 +1,4 @@
 :root {
-  /* Sistema de diseño Bon Appétit (Figma): vino, dorado y fondo crema. */
   --ba-titulo: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --ba-borde: #e7e2da;
   --ba-fondo: #f7f5f1;
@@ -59,14 +58,12 @@
   --ion-color-medium-tint: #7a7470;
 }
 
-/* Títulos con la tipografía de la marca */
 ion-title,
 h1, h2 {
   font-family: var(--ba-titulo);
 }
 ion-toolbar ion-title { font-weight: 700; font-size: 19px; }
 
-/* Tarjetas y listas con bordes suaves, como en el Figma */
 ion-card {
   border: 1px solid var(--ba-borde);
   border-radius: 12px;
@@ -83,7 +80,6 @@ ion-badge {
 }
 ion-button { --border-radius: 8px; font-weight: 600; text-transform: none; letter-spacing: 0; }
 
-/* Barra inferior de navegación (App.vue) */
 .barra-inferior {
   position: fixed;
   left: 0;
@@ -115,14 +111,8 @@ ion-button { --border-radius: 8px; font-weight: 600; text-transform: none; lette
 .barra-inferior ion-icon { font-size: 22px; }
 .barra-inferior button.activo { color: var(--ion-color-primary); }
 
-/* Con la barra visible, el contenido y el botón flotante quedan por encima de ella. */
 body.con-barra ion-router-outlet { bottom: calc(58px + var(--ion-safe-area-bottom, 0px)); }
 
-/*
- * Áreas seguras: ion-header/ion-toolbar ya suman --ion-safe-area-top (notch). Para el
- * contenido se suman los insets laterales (landscape con notch) e inferior (barra de
- * gestos) al padding normal. Ionic llena --ion-safe-area-* con env(safe-area-inset-*).
- */
 .contenido-seguro {
   --padding-start: calc(16px + var(--ion-safe-area-left, 0px));
   --padding-end: calc(16px + var(--ion-safe-area-right, 0px));
@@ -130,7 +120,6 @@ body.con-barra ion-router-outlet { bottom: calc(58px + var(--ion-safe-area-botto
   --padding-bottom: calc(16px + var(--ion-safe-area-bottom, 0px));
 }
 
-/* Contenedor centrado para que en pantallas grandes / tablets no se estire todo. */
 .contenedor {
   max-width: 720px;
   margin: 0 auto;

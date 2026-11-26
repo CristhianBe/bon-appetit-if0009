@@ -1,11 +1,6 @@
 import { http } from './http';
 import type { Paginado, Producto } from './productosApi';
 
-/**
- * Operación del salón contra la API real: mesas, comandas, detalle, cobro y reservas de hoy.
- * Mismos endpoints que usa el panel web (routes/api.php).
- */
-
 export type CodigoEstadoComanda = 'abierta' | 'en_preparacion' | 'servida' | 'cerrada';
 
 export interface ComandaActiva {
@@ -74,7 +69,6 @@ export interface Catalogo {
   nombre: string;
 }
 
-/** Recorre todas las páginas de un listado paginado. */
 export async function traerTodo<T>(ruta: string, params: Record<string, unknown> = {}): Promise<T[]> {
   const { data: primera } = await http.get<Paginado<T>>(ruta, { params: { ...params, page: 1 } });
   let datos = primera.data ?? [];

@@ -1,7 +1,3 @@
-/**
- * Administración de usuarios y roles (solo administrador): /api/usuarios y /api/roles.
- * Los demás roles reciben 403 de la API; aquí además se les muestra un aviso en vez de la tabla.
- */
 import {
     ETIQUETA_ROL, api, asegurarRol, avisar, confirmar, conBoton, escapar, mensajeError, mostrarErrorForm,
     pintarCargando, pintarError, tieneRol, traerTodo, usuario,
@@ -17,8 +13,6 @@ let editando = null;
 
 const TONO_ROL = { administrador: 'danger', mesero: 'info', cajero: 'success' };
 const esYo = (u) => u.id === usuario()?.id;
-
-/* ------------------------------------------------------------------ Render */
 
 function pintarRoles() {
     document.querySelector('[data-roles-resumen]').innerHTML = estado.roles.map((r) => {
@@ -73,8 +67,6 @@ async function cargar() {
     }
 }
 
-/* ------------------------------------------------------------------ Crear / editar */
-
 function actualizarHintRol() {
     const rol = estado.roles.find((r) => r.nombre === form.rol.value);
     dialogo.querySelector('[data-rol-hint]').textContent = rol?.descripcion ?? '';
@@ -87,7 +79,7 @@ function abrirFormulario(u = null) {
     form.nombre.value = u?.name ?? '';
     form.email.value = u?.email ?? '';
     form.rol.value = u?.rol ?? 'mesero';
-    form.rol.disabled = Boolean(u && esYo(u)); // para no quitarse a uno mismo el rol de administrador
+    form.rol.disabled = Boolean(u && esYo(u));
     form.password.value = '';
     form.password.required = !u;
     dialogo.querySelector('[data-password-etiqueta]').textContent = u ? 'Contraseña nueva (opcional)' : 'Contraseña';
@@ -127,8 +119,6 @@ form.addEventListener('submit', async (e) => {
     });
 });
 
-/* ------------------------------------------------------------------ Eventos */
-
 $lista.addEventListener('click', async (e) => {
     const boton = e.target.closest('button');
     if (!boton) return;
@@ -158,8 +148,6 @@ document.querySelector('[data-buscar-usuario]').addEventListener('input', (e) =>
     estado.texto = e.target.value.trim().toLowerCase();
     pintarTabla();
 });
-
-/* ------------------------------------------------------------------ Arranque */
 
 (async () => {
     await asegurarRol();

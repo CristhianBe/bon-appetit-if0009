@@ -1,8 +1,3 @@
-/**
- * Pantalla de Menú: catálogo de platillos desde la API (GET /api/productos).
- * Todos los roles lo consultan; solo el administrador crea, edita, cambia disponibilidad
- * y elimina platillos, y administra las categorías (la API lo exige con el rol "administrador").
- */
 import { ListadoView } from './views/ListadoView.js';
 import {
     api, asegurarRol, avisar, confirmar, conBoton, escapar, mensajeError, mostrarErrorForm, tieneRol, traerTodo,
@@ -17,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const vista = new ListadoView(api, container, null, { puedeEditar: admin });
 
-    /* ------------------------------------------------------------ Chips de categoría y filtros */
     const grupo = document.querySelector('[data-menu-categorias]');
     vista.onCategorias = (categorias) => {
         if (vista.filtros.categoria && !categorias.includes(vista.filtros.categoria)) vista.filtros.categoria = '';
@@ -44,11 +38,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     vista.render(1);
     if (!admin) return;
 
-    /* ------------------------------------------------------------ Administración del menú */
     let categorias = [];
     const cargarCategorias = async () => { categorias = await traerTodo('/categorias?por_pagina=50'); };
 
-    // --- Platillo: crear / editar
     const dlgPlatillo = document.getElementById('dlg-platillo');
     const formPlatillo = dlgPlatillo.querySelector('form');
     let editando = null;
@@ -103,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.querySelector('[data-nuevo-platillo]').addEventListener('click', () => abrirFormulario());
 
-    // --- Acciones de cada tarjeta (editar / disponibilidad / eliminar)
     container.addEventListener('click', async (e) => {
         const boton = e.target.closest('[data-editar], [data-alternar], [data-eliminar]');
         if (!boton) return;
@@ -141,7 +132,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- Categorías
     const dlgCategorias = document.getElementById('dlg-categorias');
     const listaCategorias = dlgCategorias.querySelector('[data-categorias-lista]');
 

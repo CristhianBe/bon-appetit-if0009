@@ -9,7 +9,6 @@
 @endpush
 
 @section('content')
-    {{-- Las comandas se cargan desde la API (GET /api/comandas?activas=1) con resources/js/pages/pedidos.js --}}
     <section class="kpis" aria-label="Resumen de comandas">
         <article class="panel-card kpi">
             <div class="kpi-head">Comandas activas <span class="kpi-icon"><x-icon name="comandas" /></span></div>
@@ -50,7 +49,6 @@
         <div data-detalle-contenedor></div>
     </div>
 
-    {{-- Selector de productos para agregar a la comanda --}}
     <dialog class="modal modal--wide" id="dlg-productos" aria-labelledby="dlg-productos-titulo">
         <div class="modal-head">
             <div>
@@ -79,7 +77,6 @@
         </div>
     </dialog>
 
-    {{-- Cobro en caja --}}
     <dialog class="modal" id="dlg-cobrar" aria-labelledby="dlg-cobrar-titulo">
         <form method="post" action="#" data-form-cobrar novalidate>
             <div class="modal-head">

@@ -1,4 +1,3 @@
-/** Formato de colones de Costa Rica: ₡38.500 (igual que el panel web). */
 export function colones(monto: number | string | null | undefined): string {
   return `₡${Math.round(Number(monto ?? 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 }
@@ -13,10 +12,8 @@ export function duracion(minutos: number): string {
   return `${Math.floor(minutos / 60)} h ${String(minutos % 60).padStart(2, '0')} min`;
 }
 
-/** Fecha local AAAA-MM-DD (la del teléfono, que es la del restaurante). */
 export function fechaIso(fecha = new Date()): string {
   return new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-/** Minutos sin servir a partir de los cuales una comanda se marca con retraso. */
 export const MINUTOS_RETRASO = 45;

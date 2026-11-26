@@ -25,10 +25,6 @@
                 <h2>Bienvenido de nuevo</h2>
                 <p class="lead">Iniciá sesión con tu cuenta del restaurante.</p>
 
-                {{--
-                    El formulario no navega a otra página: panel.js lo envía por POST a /api/login
-                    (Sanctum) y guarda el token. Así la contraseña nunca aparece en la URL.
-                --}}
                 <form class="panel-card login-card" method="post" action="#" data-form-login novalidate>
                     <div class="field">
                         <label for="email">Correo electrónico</label>
